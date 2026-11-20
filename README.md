@@ -56,7 +56,35 @@ AI 데이터 저널리즘 교육을 위한 가상 선거 보도 프로젝트입�
 - STEP 9: 통합 테스트 및 발표
 
 ## 7. 실행 방법
-개발 진행 후 작성 예정
+
+### 개발 환경
+- Windows 11
+- Python 3.12.10
+- VS Code
+
+### 최초 실행 준비
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+### FastAPI 서버 실행
+프로젝트 최상위 폴더에서 실행합니다.
+
+```powershell
+.\run_server.ps1
+```
+
+### 접속 주소
+- 대시보드: http://127.0.0.1:8000/dashboard
+- 선거 데이터 API: http://127.0.0.1:8000/api/election-results
+- WebSocket: ws://127.0.0.1:8000/ws
+
+### 서버 종료
+서버 실행 터미널에서 Ctrl + C를 누릅니다.
+
+> 본 프로젝트의 모든 선거 데이터는 교육용 가상 데이터입니다.
 
 ## 8. 테스트
 개발 진행 후 작성 예정
