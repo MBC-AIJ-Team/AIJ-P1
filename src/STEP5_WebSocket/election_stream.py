@@ -2,11 +2,11 @@
 from pathlib import Path
 import pandas as pd
 
-# 프로젝트 기본 경로
-BASE_DIR = Path(__file__).resolve().parent.parent
+# 프로젝트 최상위 경로
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 # STEP 2에서 만든 가상 선거 데이터
-DATA_FILE = BASE_DIR / "STEP2_Data" / "election_results.csv"
+DATA_FILE = BASE_DIR / "data" / "STEP2_Data" / "election_results.csv"
 
 
 def load_election_data():

@@ -24,8 +24,8 @@ from pathlib import Path
 import pandas as pd
 
 # STEP 2 데이터 파일 위치
-BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_FILE = BASE_DIR / "STEP2_Data" / "election_results.csv"
+BASE_DIR = Path(__file__).resolve().parents[2]
+DATA_FILE = BASE_DIR / "data" / "STEP2_Data" / "election_results.csv"
 
 
 # 가상 선거 데이터 조회 API
