@@ -221,3 +221,38 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# ==========================================
+# AIJ-P1 프로젝트 전용 Git 제외 설정
+# ==========================================
+
+# AI 생성 영상 클립
+/video/clips/
+
+# 최종 렌더링 영상
+/video/output/
+
+# 음성 백업
+/video/audio_backup_before_name_change/
+
+# 프로젝트 작업 백업
+/name_change_backup_*/
+
+# 영상 및 편집 프로젝트 원본
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.prproj
+*.aep
+
+# 이미지 원본 중 대용량 파일
+*.psd
+*.psb
+*.tif
+*.tiff
+
+# 임시 파일
+*.tmp
+*.bak
