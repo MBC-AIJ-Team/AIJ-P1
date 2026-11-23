@@ -217,3 +217,60 @@ async def websocket_endpoint(websocket: WebSocket):
     finally:
         await stop_playback()
         manager.disconnect(websocket)
+
+
+# ============================================
+# STEP 6 - RAG 기반 AI 기사 조회 API
+# ============================================
+
+import json
+from fastapi import HTTPException
+
+
+# AI 기사가 저장된 폴더
+ARTICLE_DIR = BASE_DIR / "rag" / "articles"
+
+
+@app.get("/api/ai-article")
+def get_ai_article(step: int = 10):
+    """저장된 AI 기사 초안을 조회한다."""
+
+    # 개표 단계는 1~10 사이만 허용
+    if not 1 <= step <= 10:
+        raise HTTPException(
+            status_code=400,
+            detail="개표 단계는 1~10 사이여야 합니다."
+        )
+
+    article_file = (
+        ARTICLE_DIR / f"ai_article_step_{step:02d}.json"
+    )
+
+    if not article_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"{step}단계 AI 기사가 아직 생성되지 않았습니다."
+        )
+
+    try:
+        with open(article_file, "r", encoding="utf-8") as file:
+            article = json.load(file)
+
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(
+            status_code=500,
+            detail="AI 기사 파일을 읽을 수 없습니다."
+        )
+
+    if not isinstance(article, dict):
+        raise HTTPException(
+            status_code=500,
+            detail="AI 기사 데이터 형식이 올바르지 않습니다."
+        )
+
+    # 기사 기본 정보 반환
+    return {
+        "project": "AIJ_P1",
+        "mode": "가상 선거·교육용 시뮬레이션",
+        "article": article
+    }

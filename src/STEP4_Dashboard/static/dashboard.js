@@ -43,7 +43,7 @@ async function loadElectionResults() {
 
         const colors = {
             "이몽룡": "#3b82f6",
-            "심청이": "#ef4444",
+            "심청": "#ef4444",
             "홍길동": "#22c55e"
         };
 
@@ -122,7 +122,7 @@ async function loadRegionResults() {
             "중앙구", "동부구", "서부구", "남부구", "북부구"
         ];
 
-        const candidateOrder = ["이몽룡", "심청이", "홍길동"];
+        const candidateOrder = ["이몽룡", "심청", "홍길동"];
 
         // HTML 표 생성
         const tableRows = regionOrder.map(region => {
@@ -143,7 +143,7 @@ async function loadRegionResults() {
                         <tr>
                             <th>지역</th>
                             <th>이몽룡</th>
-                            <th>심청이</th>
+                            <th>심청</th>
                             <th>홍길동</th>
                         </tr>
                     </thead>
@@ -178,11 +178,11 @@ async function loadVoteChart() {
 
         const result = await response.json();
 
-        const candidateNames = ["이몽룡", "심청이", "홍길동"];
+        const candidateNames = ["이몽룡", "심청", "홍길동"];
 
         const colors = {
             "이몽룡": "#3b82f6",
-            "심청이": "#ef4444",
+            "심청": "#ef4444",
             "홍길동": "#22c55e"
         };
 
@@ -617,3 +617,125 @@ if (document.readyState === "loading") {
 } else {
     initializeElectionControls();
 }
+
+
+/* ==========================================
+   STEP 6 - RAG 기반 AI 뉴스 기사 표시
+   ========================================== */
+
+// AI 기사 불러오기
+async function loadAIArticle() {
+
+    const button = document.getElementById(
+        "ai-article-load-btn"
+    );
+
+    const status = document.getElementById(
+        "ai-article-status"
+    );
+
+    const errorMessage = document.getElementById(
+        "ai-article-error"
+    );
+
+    // 현재 선택된 개표 단계
+    const stepSelect = document.getElementById("step-select");
+    const step = stepSelect ? Number(stepSelect.value) : 10;
+
+    // 이전 오류 메시지 초기화
+    errorMessage.textContent = "";
+    status.textContent = "불러오는 중";
+
+    button.disabled = true;
+
+    try {
+        // FastAPI에서 저장된 AI 기사 가져오기
+        const response = await fetch(
+            `/api/ai-article?step=${step}`
+        );
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error(
+                    `${step}단계 AI 기사가 아직 생성되지 않았습니다.`
+                );
+            }
+
+            throw new Error(
+                `기사 조회 오류: HTTP ${response.status}`
+            );
+        }
+
+        const result = await response.json();
+        const article = result.article;
+
+        if (!article || typeof article.article !== "string") {
+            throw new Error("기사 데이터 형식이 올바르지 않습니다.");
+        }
+
+        // 첫 줄이 Markdown 제목이면 제목과 본문 분리
+        const lines = article.article.trim().split("\n");
+
+        let title = "AI 선거 뉴스 기사";
+        let body = article.article.trim();
+
+        if (lines[0].startsWith("# ")) {
+            title = lines[0].replace(/^#\s*/, "");
+            body = lines.slice(1).join("\n").trim();
+        }
+
+        // 기사 제목 및 본문 표시
+        document.getElementById(
+            "ai-article-title"
+        ).textContent = title;
+
+        document.getElementById(
+            "ai-article-body"
+        ).textContent = body;
+
+        // 검토 상태
+        status.textContent = article.status || "검토 필요";
+
+        // 개표 기준시각
+        document.getElementById(
+            "ai-article-timestamp"
+        ).textContent = article.timestamp || "-";
+
+        // RAG 근거 ID
+        document.getElementById(
+            "ai-article-evidence"
+        ).textContent = Array.isArray(article.evidence_ids)
+            ? article.evidence_ids.join(", ")
+            : "-";
+
+        // AI 모델
+        document.getElementById(
+            "ai-article-model"
+        ).textContent = article.model || "-";
+
+        console.log(`AI 기사 ${step}단계 조회 완료`);
+
+    } catch (error) {
+        console.error("AI 기사 조회 실패:", error);
+
+        status.textContent = "조회 실패";
+        errorMessage.textContent = error.message;
+
+    } finally {
+        button.disabled = false;
+    }
+}
+
+
+// AI 기사 조회 버튼 이벤트 연결
+document.addEventListener("DOMContentLoaded", () => {
+
+    const button = document.getElementById(
+        "ai-article-load-btn"
+    );
+
+    if (button) {
+        button.addEventListener("click", loadAIArticle);
+    }
+
+});

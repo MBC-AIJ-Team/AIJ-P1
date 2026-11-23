@@ -223,7 +223,7 @@ plt.rcParams["axes.unicode_minus"] = False
 # 후보별 색상
 candidate_colors = {
     "이몽룡": "#2563EB",
-    "심청이": "#DC2626",
+    "심청": "#DC2626",
     "홍길동": "#16A34A"
 }
 

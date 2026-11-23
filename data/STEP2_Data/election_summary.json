@@ -36,7 +36,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 4585,
           "vote_share_pct": 13.3072,
           "rank": 3
@@ -71,7 +71,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 11135,
           "vote_share_pct": 16.1482,
           "rank": 3
@@ -106,7 +106,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 19650,
           "vote_share_pct": 18.9855,
           "rank": 3
@@ -141,7 +141,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 30130,
           "vote_share_pct": 21.8191,
           "rank": 3
@@ -176,7 +176,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 41920,
           "vote_share_pct": 24.2719,
           "rank": 3
@@ -204,7 +204,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 55675,
           "vote_share_pct": 26.8475,
           "rank": 2
@@ -239,7 +239,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 71395,
           "vote_share_pct": 29.4917,
           "rank": 2
@@ -274,7 +274,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 89080,
           "vote_share_pct": 32.1774,
           "rank": 2
@@ -309,7 +309,7 @@
         },
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 108730,
           "vote_share_pct": 34.8896,
           "rank": 2
@@ -337,7 +337,7 @@
       "candidate_results": [
         {
           "candidate_id": "C02",
-          "name": "심청이",
+          "name": "심청",
           "votes": 131000,
           "vote_share_pct": 37.8066,
           "rank": 1
@@ -358,7 +358,7 @@
         }
       ],
       "leader_id": "C02",
-      "leader_name": "심청이",
+      "leader_name": "심청",
       "margin_votes": 3000,
       "margin_percentage_points": 0.8658
     }

@@ -121,5 +121,69 @@
 
 </section>
 
+<!-- ============================================
+     STEP 6 - RAG 기반 AI 뉴스 기사 표시 영역
+============================================ -->
+
+<section id="ai-news-section"
+         style="margin: 24px; padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 10px;">
+
+    <h2>AI 선거 뉴스 기사</h2>
+
+    <p>
+        <strong>가상 선거·교육용 시뮬레이션</strong>
+    </p>
+
+    <p>
+        기사 상태:
+        <strong id="ai-article-status">조회 전</strong>
+    </p>
+
+    <button id="ai-article-load-btn" type="button">
+        AI 기사 불러오기
+    </button>
+
+    <hr>
+
+    <h3 id="ai-article-title">
+        AI 뉴스 기사 제목이 표시됩니다.
+    </h3>
+
+    <div id="ai-article-body"
+         style="white-space: pre-wrap;
+                line-height: 1.8;">
+        AI 기사 불러오기 버튼을 눌러주세요.
+    </div>
+
+    <hr>
+
+    <p>
+        개표 기준시각:
+        <span id="ai-article-timestamp">-</span>
+    </p>
+
+    <p>
+        RAG 근거 ID:
+        <span id="ai-article-evidence">-</span>
+    </p>
+
+    <p>
+        AI 모델:
+        <span id="ai-article-model">-</span>
+    </p>
+
+    <p id="ai-article-error"
+       role="alert"
+       style="color: red;"></p>
+
+    <p>
+        ※ 본 기사는 AI가 생성한 초안이며
+        편집자의 최종 승인을 받지 않았습니다.
+    </p>
+
+</section>
+
 </body>
 </html>

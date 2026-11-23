@@ -8,7 +8,7 @@ NOTICE = '가상 선거·교육용 시뮬레이션'
 SOURCE = 'SYNTHETIC-STEP2-v1.0'
 CANDIDATES = [
     dict(candidate_id='C01', name='이몽룡', age=52, party='한빛미래당', primary_policy='광역교통망 확충', policy_focus='교통·도시개발', color='#2563EB'),
-    dict(candidate_id='C02', name='심청이', age=47, party='시민혁신당', primary_policy='청년 주거 지원', policy_focus='주거·복지', color='#DC2626'),
+    dict(candidate_id='C02', name='심청', age=47, party='시민혁신당', primary_policy='청년 주거 지원', policy_focus='주거·복지', color='#DC2626'),
     dict(candidate_id='C03', name='홍길동', age=44, party='무소속', primary_policy='소상공인 지원', policy_focus='지역경제·일자리', color='#16A34A'),
 ]
 REGIONS = [
@@ -96,7 +96,7 @@ def main():
     add('DOC-001','한빛시 가상 선거 기본 설정','election_background',
         '한빛시는 교육 실습을 위한 가상 도시다. 선거는 2026년 11월 20일로 설정되었으며 중앙구, 동부구, 서부구, 남부구, 북부구 5개 지역으로 구성된다. 선거인은 500,000명, 투표자는 350,000명이다.')
     add('DOC-002','이몽룡 후보 정책 소개','candidate_policy','이몽룡 후보는 가상 정당 한빛미래당 소속이며 광역교통망 확충을 주요 공약으로 제시한다. 정책 영역은 교통·도시개발이다.','C01')
-    add('DOC-003','심청이 후보 정책 소개','candidate_policy','심청이 후보는 가상 정당 시민혁신당 소속이며 청년 주거 지원을 주요 공약으로 제시한다. 정책 영역은 주거·복지다.','C02')
+    add('DOC-003','심청 후보 정책 소개','candidate_policy','심청 후보는 가상 정당 시민혁신당 소속이며 청년 주거 지원을 주요 공약으로 제시한다. 정책 영역은 주거·복지다.','C02')
     add('DOC-004','홍길동 후보 정책 소개','candidate_policy','홍길동 후보는 무소속이며 소상공인 지원을 주요 공약으로 제시한다. 정책 영역은 지역경제·일자리다.','C03')
     add('DOC-005','개표 데이터 해석 기준','methodology',
         '각 단계는 지역별 누적 개표값이며 단계가 진행될수록 누적 개표수는 감소하지 않는다. 득표율은 후보 득표수/해당 범위 유효투표수×100이다. 개표율은 개표된 투표지 수/최종 투표자 수×100이며 무효표는 득표율의 분모에서 제외한다. 초반 선두와 최종 결과는 다를 수 있다. 모든 수치는 가상이다.')
