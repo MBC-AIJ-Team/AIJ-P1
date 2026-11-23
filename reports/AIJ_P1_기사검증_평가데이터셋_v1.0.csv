@@ -1,0 +1,3 @@
+﻿test_id,case,github_file,source_step,expected_outcome,recalculated_outcome,correct,mismatches,evaluation
+A01,정상 기사,ai_article_step_10.json,10,통과,통과,1,없음,원본 JSON의 수치 필드를 독립 비교; 실제 article_validator.py 실행 아님
+A02,고의 오류 기사,ai_article_step_10_error.json,10,차단 필요,차단 필요,1,심청 득표수 불일치 | 득표 합계 불일치 | 기사 내부 격차 불일치,원본 JSON의 수치 필드를 독립 비교; 실제 article_validator.py 실행 아님

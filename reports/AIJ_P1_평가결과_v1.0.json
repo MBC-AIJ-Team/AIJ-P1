@@ -1,0 +1,217 @@
+{
+  "metrics": {
+    "rag_cases": 15,
+    "top1_correct": 15,
+    "top1_accuracy": 1.0,
+    "top3_hit_rate": 1.0,
+    "article_cases": 2,
+    "article_expected_decisions_correct": 2,
+    "source_type": "GitHub 2026-11-23 정적 확인 + 검색 로직 재현 + 독립 수치 대조"
+  },
+  "rag_cases": [
+    {
+      "test_id": "R01",
+      "question": "이몽룡 후보의 교통 정책은?",
+      "expected_document_id": "DOC-002",
+      "top1_document_id": "DOC-002",
+      "top3_document_ids": "DOC-002",
+      "top1_score": 12,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "후보",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R02",
+      "question": "심청 후보의 청년 주거 지원 정책은?",
+      "expected_document_id": "DOC-003",
+      "top1_document_id": "DOC-003",
+      "top3_document_ids": "DOC-003 | DOC-004",
+      "top1_score": 14,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "후보",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R03",
+      "question": "홍길동 후보의 소상공인 공약은?",
+      "expected_document_id": "DOC-004",
+      "top1_document_id": "DOC-004",
+      "top3_document_ids": "DOC-004",
+      "top1_score": 12,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "후보",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R04",
+      "question": "한빛시는 몇 개 지역으로 구성되나?",
+      "expected_document_id": "DOC-001",
+      "top1_document_id": "DOC-001",
+      "top3_document_ids": "DOC-001 | DOC-002 | DOC-003",
+      "top1_score": 3,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "배경",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R05",
+      "question": "선거인은 500000명인가?",
+      "expected_document_id": "DOC-001",
+      "top1_document_id": "DOC-001",
+      "top3_document_ids": "DOC-001",
+      "top1_score": 1,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "배경",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R06",
+      "question": "득표율 계산 기준은?",
+      "expected_document_id": "DOC-005",
+      "top1_document_id": "DOC-005",
+      "top3_document_ids": "DOC-005",
+      "top1_score": 1,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "방법",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R07",
+      "question": "무효표는 득표율 분모에 포함되나?",
+      "expected_document_id": "DOC-005",
+      "top1_document_id": "DOC-005",
+      "top3_document_ids": "DOC-005",
+      "top1_score": 3,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "방법",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R08",
+      "question": "중립 보도 원칙을 알려줘",
+      "expected_document_id": "DOC-006",
+      "top1_document_id": "DOC-006",
+      "top3_document_ids": "DOC-006",
+      "top1_score": 2,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "윤리",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R09",
+      "question": "근거 누락 시 기사 승인은?",
+      "expected_document_id": "DOC-006",
+      "top1_document_id": "DOC-006",
+      "top3_document_ids": "DOC-006 | DOC-001 | DOC-002",
+      "top1_score": 4,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "윤리",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R10",
+      "question": "이몽룡의 광역교통망 확충 공약",
+      "expected_document_id": "DOC-002",
+      "top1_document_id": "DOC-002",
+      "top3_document_ids": "DOC-002",
+      "top1_score": 12,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "후보",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R11",
+      "question": "심청이 후보의 주거 정책은?",
+      "expected_document_id": "DOC-003",
+      "top1_document_id": "DOC-003",
+      "top3_document_ids": "DOC-003",
+      "top1_score": 11,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "이름 변형",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R12",
+      "question": "2026 선거의 투표자 수는?",
+      "expected_document_id": "DOC-001",
+      "top1_document_id": "DOC-001",
+      "top3_document_ids": "DOC-001 | DOC-005",
+      "top1_score": 2,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "배경",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R13",
+      "question": "홍길동 후보는 무소속인가?",
+      "expected_document_id": "DOC-004",
+      "top1_document_id": "DOC-004",
+      "top3_document_ids": "DOC-004 | DOC-002 | DOC-003",
+      "top1_score": 12,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "후보",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R14",
+      "question": "개표율은 어떤 방식으로 계산하나?",
+      "expected_document_id": "DOC-005",
+      "top1_document_id": "DOC-005",
+      "top3_document_ids": "DOC-005",
+      "top1_score": 1,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "방법",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    },
+    {
+      "test_id": "R15",
+      "question": "외계행성 기상 정보는?",
+      "expected_document_id": "없음",
+      "top1_document_id": "없음",
+      "top3_document_ids": "",
+      "top1_score": 0,
+      "top1_correct": 1,
+      "top3_hit": 1,
+      "type": "비관련",
+      "evaluation": "코드 로직 재현(원본 저장소 직접 실행 아님)"
+    }
+  ],
+  "article_cases": [
+    {
+      "test_id": "A01",
+      "case": "정상 기사",
+      "github_file": "ai_article_step_10.json",
+      "source_step": 10,
+      "expected_outcome": "통과",
+      "recalculated_outcome": "통과",
+      "correct": 1,
+      "mismatches": "없음",
+      "evaluation": "원본 JSON의 수치 필드를 독립 비교; 실제 article_validator.py 실행 아님"
+    },
+    {
+      "test_id": "A02",
+      "case": "고의 오류 기사",
+      "github_file": "ai_article_step_10_error.json",
+      "source_step": 10,
+      "expected_outcome": "차단 필요",
+      "recalculated_outcome": "차단 필요",
+      "correct": 1,
+      "mismatches": "심청 득표수 불일치 | 득표 합계 불일치 | 기사 내부 격차 불일치",
+      "evaluation": "원본 JSON의 수치 필드를 독립 비교; 실제 article_validator.py 실행 아님"
+    }
+  ]
+}
