@@ -1,347 +1,188 @@
-
+import csv
 import json
 import re
+import sys
 from pathlib import Path
 from datetime import datetime
-from xml.parsers.expat import errors
 
-# 프로젝트 최상위 경로
 ROOT = Path(__file__).resolve().parents[2]
+ARTICLE_DIR = ROOT / 'rag' / 'articles'
+ARTICLE_PATH = ARTICLE_DIR / 'ai_article_step_10.json'
+DATA_DIR = ROOT / 'data' / 'STEP2_Data'
+CANDIDATES = ['심청', '이몽룡', '홍길동']
+VALIDATION_ERRORS = []
+EXPECTED = {'DOC-002': ('C01', '이몽룡', '광역교통망 확충'),
+            'DOC-003': ('C02', '심청', '청년 주거 지원'),
+            'DOC-004': ('C03', '홍길동', '소상공인 지원')}
+NUM = r'[\d,]+'
+PCT = r'\d+(?:\.\d+)?'
 
-ARTICLE_PATH = ROOT / "rag" / "articles" / "ai_article_step_10.json"
 
-CANDIDATES = ["심청", "이몽룡", "홍길동"]
+def read_json(path):
+    return json.loads(path.read_text(encoding='utf-8-sig'))
+
+
+def report(label, errors):
+    print('\n===== ' + label + ' =====')
+    VALIDATION_ERRORS.extend(errors)
+    for error in errors:
+        print('[FAIL]', error)
+    if not errors:
+        print('[PASS]', label)
+    return not errors
 
 
 def validate_article():
-    with open(ARTICLE_PATH, "r", encoding="utf-8-sig") as f:
-        data = json.load(f)
-
-    article = data.get("article", "")
+    VALIDATION_ERRORS.clear()
     errors = []
-    checks = []
-
-    global VALIDATION_ERRORS
-    VALIDATION_ERRORS = []
-
-    # 1. 교육용 가상 선거 표시
-    if data.get("is_synthetic") is True and "교육용 시뮬레이션" in article:
-        checks.append("가상 선거 표시 확인")
-    else:
-        errors.append("가상 선거 표시 누락")
-
-    # 2. 개표 단계 확인
-    if data.get("step") == 10:
-        checks.append("개표 단계 확인")
-    else:
-        errors.append("개표 단계 불일치")
-
-    # 3. 후보별 득표수 및 득표율 추출
-    results = {}
-
-    for name in CANDIDATES:
-        pattern = rf"{name} 후보(?:는|가)?\s*(\d[\d,]*)표\s*\(([\d.]+)%\)"
-        match = re.search(pattern, article)
-
-        if match:
-            votes = int(match.group(1).replace(",", ""))
-            rate = float(match.group(2))
-            results[name] = (votes, rate)
-        else:
-            errors.append(f"{name} 후보 득표 정보 확인 실패")
-
-    # 4. 기사 내부 득표율 계산 확인
-    if len(results) == 3:
-        total = sum(votes for votes, rate in results.values())
-
-        for name, (votes, rate) in results.items():
-            calculated = round(votes / total * 100, 2) if total else 0
-
-            if abs(calculated - rate) > 0.01:
-                errors.append(f"{name} 득표율 계산 오류")
-
-        if not any("득표율 계산 오류" in e for e in errors):
-            checks.append("기사 내부 득표율 계산 일치")
-
-        # 5. 1위와 2위 격차 확인
-        sorted_votes = sorted(
-            [votes for votes, rate in results.values()],
-            reverse=True
-        )
-        gap = sorted_votes[0] - sorted_votes[1]
-
-        gap_match = re.search(r"득표 차이는\s*([\d,]+)표", article)
-
-        if gap_match and int(gap_match.group(1).replace(",", "")) == gap:
-            checks.append("득표 차이 계산 일치")
-        else:
-            errors.append("득표 차이 불일치")
-
-    # 6. RAG 근거 ID 형식 확인
-    evidence_ids = data.get("evidence_ids", [])
-
-    if evidence_ids and all(eid in article for eid in evidence_ids):
-        checks.append("기사 내 근거 ID 표기 확인")
-    else:
-        errors.append("근거 ID 누락 또는 불일치")
-
-    # 7. 기준시각 형식 확인
     try:
-        datetime.fromisoformat(data["timestamp"])
-        checks.append("기준시각 형식 확인")
-    except (KeyError, ValueError, TypeError):
-        errors.append("기준시각 형식 오류")
-
-    print("\n===== STEP 7 기사 기본 검증 =====")
-
-    for check in checks:
-        print("[PASS]", check)
-
-    for error in errors:
-        print("[FAIL]", error)
-        VALIDATION_ERRORS.extend(errors)
-
-    print("\n검사 오류 수:", len(errors))
-
-    if errors:
-        print("결과: 검증 실패 / 승인 차단")
-        return False
-    else:
-        print("결과: 기본 검사 통과 / 원본 데이터 대조 필요")
-        return True
-
+        d = read_json(ARTICLE_PATH)
+        a = d['article']
+        step = d['step']
+        if not isinstance(a, str) or not a.strip():
+            raise ValueError('기사 본문 없음')
+        if type(step) is not int or not 1 <= step <= 10:
+            errors.append('개표 단계 범위 오류')
+        m = re.fullmatch(r'ai_article_step_(\d{2})(?:_.*)?\.json', ARTICLE_PATH.name)
+        if not m or int(m[1]) != step:
+            errors.append('파일명과 개표 단계 불일치')
+        if d.get('is_synthetic') is not True or '교육용 시뮬레이션' not in a or '[가상 선거]' not in a:
+            errors.append('가상 선거 표시 누락')
+        if '심청이 후보' in a:
+            errors.append('후보명 불일치')
+        if datetime.fromisoformat(d['timestamp']).utcoffset() is None:
+            errors.append('기준시각 시간대 누락')
+        if not d.get('model') or not d.get('generation_method'):
+            errors.append('AI 작성 정보 누락')
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as e:
+        errors.append(f'기사 기본 검사 오류: {e}')
+    return report('기사 기본 검증', errors)
 
 
 def validate_against_source():
-    """AI 기사와 STEP 2 원본 개표 데이터 비교"""
-
-    summary_path = ROOT / "data" / "STEP2_Data" / "election_summary.json"
-
-    with open(ARTICLE_PATH, "r", encoding="utf-8-sig") as f:
-        article_data = json.load(f)
-
-    with open(summary_path, "r", encoding="utf-8-sig") as f:
-        source_data = json.load(f)
-
-    article = article_data["article"]
-    step_number = article_data["step"]
-
     errors = []
-
-    # 같은 개표 단계의 데이터 검색
-    source_step = next(
-        (s for s in source_data["steps"] if s["step"] == step_number),
-        None
-    )
-
-    if source_step is None:
-        print("[FAIL] 원본 개표 단계 없음")
-        return False
-
-    print("\n===== STEP 7 원본 데이터 교차검증 =====")
-
-    # 1. 데이터 출처 확인
-    if article_data["source_id"] == source_data["source_id"]:
-        print("[PASS] 데이터 출처 일치")
-    else:
-        errors.append("데이터 출처 불일치")
-
-    # 2. 개표 기준시각 확인
-    if article_data["timestamp"] == source_step["timestamp"]:
-        print("[PASS] 개표 기준시각 일치")
-    else:
-        errors.append("기준시각 불일치")
-
-    # 3. 후보별 득표수와 득표율 확인
-    for candidate in source_step["candidate_results"]:
-        name = candidate["name"]
-        votes = candidate["votes"]
-        rate = candidate["vote_share_pct"]
-
-        pattern = rf"{name} 후보(?:는|가)?\s*([\d,]+)표\s*\(([\d.]+)%\)"
-        match = re.search(pattern, article)
-
-        if match is None:
-            errors.append(f"{name} 기사 데이터 누락")
-            continue
-
-        article_votes = int(match.group(1).replace(",", ""))
-        article_rate = float(match.group(2))
-
-        if article_votes == votes:
-            print(f"[PASS] {name} 득표수 일치")
-        else:
-            errors.append(f"{name} 득표수 불일치")
-
-        if abs(article_rate - rate) <= 0.0051:
-            print(f"[PASS] {name} 득표율 일치")
-        else:
-            errors.append(f"{name} 득표율 불일치")
-
-    # 4. 1위와 2위 득표 차이 확인
-    gap_match = re.search(r"득표 차이는\s*([\d,]+)표", article)
-
-    if gap_match:
-        article_gap = int(gap_match.group(1).replace(",", ""))
-
-        if article_gap == source_step["margin_votes"]:
-            print("[PASS] 1·2위 득표 차이 일치")
-        else:
-            errors.append("득표 차이 불일치")
-    else:
-        errors.append("득표 차이 정보 누락")
-
-    # 5. 개표율 확인
-    progress_match = re.search(r"개표율은\s*([\d.]+)%", article)
-
-    if progress_match:
-        article_progress = float(progress_match.group(1))
-
-        if abs(article_progress - source_step["count_progress_pct"]) <= 0.0051:
-            print("[PASS] 개표율 일치")
-        else:
-            errors.append("개표율 불일치")
-    else:
-        errors.append("개표율 정보 누락")
-
-    # 결과 출력
-    for error in errors:
-        print("[FAIL]", error)
-
-    VALIDATION_ERRORS.extend(errors)
-
-    if errors:
-        print("\n결과: 원본 데이터 검증 실패 / 승인 차단")
-        return False
-
-    print("\n결과: 원본 데이터 교차검증 통과")
-    return True
-
-
-if __name__ == "__main__":
-    validate_article()
-    validate_against_source()
-
+    try:
+        d = read_json(ARTICLE_PATH)
+        a = d['article']
+        step = d['step']
+        src = read_json(DATA_DIR / 'election_summary.json')
+        s = next(x for x in src['steps'] if x['step'] == step)
+        if d['source_id'] != src['source_id'] or d['timestamp'] != s['timestamp']:
+            errors.append('출처 또는 기준시각 불일치')
+        with (DATA_DIR / 'election_results.csv').open(encoding='utf-8-sig', newline='') as f:
+            rows = [r for r in csv.DictReader(f) if int(r['step']) == step]
+        ids = d.get('data_row_ids', [])
+        expected_ids = {r['row_id'] for r in rows}
+        if len(rows) != 15 or len(expected_ids) != 15 or not isinstance(ids, list) or len(ids) != 15 or set(ids) != expected_ids:
+            errors.append('데이터 행 ID 누락 또는 불일치')
+        if any(r['source_id'] != d['source_id'] or r['timestamp'] != d['timestamp'] for r in rows):
+            errors.append('CSV 출처 또는 기준시각 불일치')
+        if len({(r['region_id'], r['candidate_id']) for r in rows}) != 15:
+            errors.append('지역·후보 조합 중복 또는 누락')
+        candidates = {c['name']: c for c in s['candidate_results']}
+        for c in candidates.values():
+            if sum(int(r['votes']) for r in rows if r['candidate_id'] == c['candidate_id']) != c['votes']:
+                errors.append(f"{c['name']} CSV 합계 불일치")
+        if sum(c['votes'] for c in candidates.values()) != s['valid_votes']:
+            errors.append('유효투표수 합계 불일치')
+        if s['valid_votes'] + s['invalid_votes'] != s['counted_ballots']:
+            errors.append('개표수 합계 불일치')
+        if abs(s['counted_ballots'] / src['total_ballots'] * 100 - s['count_progress_pct']) > 0.0001:
+            errors.append('원본 개표율 계산 불일치')
+        ranked = sorted(candidates.values(), key=lambda c: c['votes'], reverse=True)
+        if ranked[0]['votes'] - ranked[1]['votes'] != s['margin_votes']:
+            errors.append('원본 득표 차이 불일치')
+        for i, c in enumerate(ranked, 1):
+            if c['rank'] != i or abs(c['votes'] / s['valid_votes'] * 100 - c['vote_share_pct']) > 0.0001:
+                errors.append(f"{c['name']} 원본 순위 또는 득표율 오류")
+        def check(pattern, expected, label, required=False, tolerance=0):
+            matches = re.findall(pattern, a)
+            if required and not matches:
+                errors.append(label + ' 누락')
+            for v in matches:
+                if abs(float(v.replace(',', '')) - expected) > tolerance:
+                    errors.append(label + ' 불일치: ' + v)
+            return len(matches)
+        check(rf'개표율(?:은|이)?\s*(?:약\s*)?({PCT})%', s['count_progress_pct'], '개표율', True, 0.0051)
+        check(r'(?<!율)득표(?:수)?\s*차이는\s*([\d,]+)표', s['margin_votes'], '득표 차이', step == 10)
+        check(rf'(?:격차(?:는|가)?\s*|)({PCT})%p', s['margin_percentage_points'], '득표율 격차', False, 0.0051)
+        for label, key in [('유효투표수', 'valid_votes'), ('무효표', 'invalid_votes'), ('개표된 투표수', 'counted_ballots')]:
+            check(rf'{label}(?:는|은)?\s*({NUM})표', s[key], label)
+        rate_count = 0
+        for name, c in candidates.items():
+            prefix = rf'{re.escape(name)}\s*(?:후보)?(?:의\s*누적\s*득표율은|는|가)?\s*'
+            rate_count += check(prefix + rf'(?:{NUM}표\s*\()?({PCT})%(?!p)', c['vote_share_pct'], name + ' 득표율', step == 10, 0.0051)
+            check(prefix + rf'({NUM})표', c['votes'], name + ' 득표수', step == 10)
+            check(prefix + rf'(?:{NUM}표\s*\()?{PCT}%\)?(?:로|를 얻어)?\s*(\d)위', c['rank'], name + ' 순위')
+        if rate_count == 0:
+            errors.append('검증 가능한 후보 득표율 없음')
+        for v in re.findall(r'(\d{1,2})단계\s*개표', a):
+            if int(v) != step:
+                errors.append('본문 개표 단계 불일치')
+        for hour, minute in re.findall(r'오후\s*(\d{1,2})시(?:\s*(\d{1,2})분)?', a):
+            dt = datetime.fromisoformat(s['timestamp'])
+            if int(hour) % 12 + 12 != dt.hour or int(minute or 0) != dt.minute:
+                errors.append('본문 기준시각 불일치')
+        if '다섯 개 구 모두 이몽룡 후보의 누적 득표가 가장 많습니다' in a:
+            regions = {r['region_id'] for r in rows}
+            for region in regions:
+                group = [r for r in rows if r['region_id'] == region]
+                mine = [int(r['votes']) for r in group if r['candidate_id'] == 'C01']
+                other = [int(r['votes']) for r in group if r['candidate_id'] != 'C01']
+                if not mine or not other or mine[0] <= max(other):
+                    errors.append(region + ' 지역 선두 불일치')
+            if len(regions) != 5:
+                errors.append('지역 수 불일치')
+        # 현재 기사 형식에서 확인되는 선두 표현을 검증한다.
+        for name in candidates:
+            if re.search(rf'{name}\s*(?:후보)?(?:는|가)?\s*(?:{PCT}%로\s*)?선두', a) and name != s['leader_name']:
+                errors.append(name + ' 선두 불일치')
+    except (OSError, ValueError, KeyError, TypeError, StopIteration, AttributeError, ZeroDivisionError) as e:
+        errors.append(f'원본 교차검증 오류: {e}')
+    return report('원본 데이터 교차검증', errors)
 
 
 def validate_rag_evidence():
-    """기사의 RAG 근거 ID와 실제 정책 문서 비교"""
-
-    policy_path = (
-        ROOT / "data" / "STEP2_Data" / "policy_documents.json"
-    )
-
-    with open(ARTICLE_PATH, "r", encoding="utf-8-sig") as f:
-        article_data = json.load(f)
-
-    with open(policy_path, "r", encoding="utf-8-sig") as f:
-        documents = json.load(f)
-
-    article = article_data["article"]
-    evidence_ids = article_data.get("evidence_ids", [])
-    source_id = article_data.get("source_id")
-
-    # 현재 가상 선거의 후보별 공약 기준
-    expected = {
-        "DOC-002": ("C01", "이몽룡", "광역교통망 확충"),
-        "DOC-003": ("C02", "심청", "청년 주거 지원"),
-        "DOC-004": ("C03", "홍길동", "소상공인 지원"),
-    }
-
-    doc_map = {
-        doc["document_id"]: doc
-        for doc in documents
-    }
-
     errors = []
-
-    print("\n===== STEP 7 RAG 근거 자동 검증 =====")
-
-    if not evidence_ids:
-        errors.append("기사에 연결된 RAG 근거가 없습니다.")
-
-    for evidence_id in evidence_ids:
-
-        if evidence_id not in doc_map:
-            errors.append(f"{evidence_id}: 근거 문서 없음")
-            continue
-
-        doc = doc_map[evidence_id]
-
-        if evidence_id not in article:
-            errors.append(f"{evidence_id}: 기사 내 인용 누락")
-            continue
-
-        if doc.get("source_id") != source_id:
-            errors.append(f"{evidence_id}: 데이터 출처 불일치")
-            continue
-
-        if evidence_id in expected:
-            candidate_id, name, policy = expected[evidence_id]
-
-            if doc.get("candidate_id") != candidate_id:
-                errors.append(f"{evidence_id}: 후보 ID 불일치")
+    try:
+        d = read_json(ARTICLE_PATH)
+        a = d['article']
+        ids = d.get('evidence_ids', [])
+        docs = {x['document_id']: x for x in read_json(DATA_DIR / 'policy_documents.json')}
+        cited = set(re.findall(r'\((DOC-\d+)\)', a))
+        if not isinstance(ids, list) or set(ids) != cited or len(ids) != len(set(ids)) or not set(EXPECTED).issubset(ids):
+            errors.append('근거 ID 누락 또는 목록 불일치')
+        for eid in ids:
+            doc = docs.get(eid)
+            if not doc or doc.get('source_id') != d['source_id']:
+                errors.append(f'{eid}: 근거 문서 또는 출처 불일치')
                 continue
-
-            if name not in doc.get("text", ""):
-                errors.append(f"{evidence_id}: 후보 이름 불일치")
-                continue
-
-            if policy not in doc.get("text", ""):
-                errors.append(f"{evidence_id}: 근거 문서 공약 불일치")
-                continue
-
-            # 후보·공약·근거 ID가 기사에서 함께 연결되는지 확인
-            pattern = (
-                rf"{re.escape(name)} 후보"
-                rf"(?:(?![.!?\n]).)*?"
-                rf"{re.escape(policy)}"
-                rf"(?:(?![.!?\n]).)*?"
-                rf"\({re.escape(evidence_id)}\)"
-            )
-
-            if not re.search(pattern, article):
-                errors.append(
-                    f"{evidence_id}: 기사 내 후보·공약·근거 연결 불일치"
-                )
-                continue
-
-        print(f"[PASS] {evidence_id}: 근거 문서 확인")
-
-    # 기사에 인용된 정책 근거가 목록에서 빠졌는지 확인
-    cited_ids = set(re.findall(r"\(DOC-\d+\)", article))
-    cited_ids = {item.strip("()") for item in cited_ids}
-
-    if cited_ids != set(evidence_ids):
-        errors.append("기사의 근거 ID와 evidence_ids 목록 불일치")
-
-    # 현재 기사는 후보 3명의 공약을 모두 소개하므로
-    # 세 가지 정책 근거가 모두 필요한지 확인
-    if article_data.get("step") == 10:
-        missing = set(expected) - set(evidence_ids)
-
-        if missing:
-            errors.append(
-                "최종 기사 정책 근거 누락: " + ", ".join(sorted(missing))
-            )
-
-    for error in errors:
-        print("[FAIL]", error)
-
-    if errors:
-        print("\n결과: RAG 근거 검증 실패 / 승인 차단")
-        return False
-
-    print("\n결과: RAG 근거 검증 통과")
-    return True
+            if eid in EXPECTED:
+                cid, name, policy = EXPECTED[eid]
+                if doc.get('candidate_id') != cid or name not in doc.get('text', '') or policy not in doc.get('text', ''):
+                    errors.append(f'{eid}: 근거 원문 불일치')
+                if not re.search(rf'{name} 후보[^.!?\n]*?{re.escape(policy)}\s*(?:을 제시했습니다|이며|입니다)?\s*\({eid}\)', a):
+                    errors.append(f'{eid}: 기사 내 후보·공약 연결 불일치')
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as e:
+        errors.append(f'RAG 검증 오류: {e}')
+    return report('RAG 근거 검증', errors)
 
 
-if __name__ == "__main__":
-    import sys
+def run_one(path):
+    global ARTICLE_PATH
+    ARTICLE_PATH = path
+    print('\n###', path.name)
+    results = [validate_article(), validate_against_source(), validate_rag_evidence()]
+    ok = all(results)
+    print('최종 결과:', 'PASS / 사람 검토 필요' if ok else 'FAIL / 승인 차단')
+    return ok
 
-    if len(sys.argv) > 1:
-        ARTICLE_PATH = Path(sys.argv[1]).resolve()
 
-    validate_article()
-    validate_against_source()
-    validate_rag_evidence()
+if __name__ == '__main__':
+    if len(sys.argv) > 2:
+        sys.exit('사용법: article_validator.py [--all | 기사 파일 경로]')
+    if len(sys.argv) == 2 and sys.argv[1] == '--all':
+        results = [run_one(ARTICLE_DIR / f'ai_article_step_{i:02d}.json') for i in range(1, 11)]
+        print(f'\n전체 결과: {sum(results)}/10 PASS')
+        sys.exit(0 if all(results) else 1)
+    sys.exit(0 if run_one(Path(sys.argv[1]).resolve() if len(sys.argv) == 2 else ARTICLE_PATH) else 1)

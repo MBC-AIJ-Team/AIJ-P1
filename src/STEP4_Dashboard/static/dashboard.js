@@ -642,11 +642,26 @@ async function loadAIArticle() {
     const stepSelect = document.getElementById("step-select");
     const step = stepSelect ? Number(stepSelect.value) : 10;
 
-    // 이전 오류 메시지 초기화
-    errorMessage.textContent = "";
-    status.textContent = "불러오는 중";
 
-    button.disabled = true;
+// 이전 오류 메시지 초기화
+errorMessage.textContent = "";
+status.textContent = "불러오는 중";
+status.style.color = "#93C5FD";
+
+// 이전 승인 정보 초기화
+document.getElementById("ai-article-approved-by").textContent = "-";
+document.getElementById("ai-article-approved-at").textContent = "-";
+document.getElementById("ai-article-approval-reason").textContent = "-";
+
+const approvalNotice = document.getElementById(
+    "ai-article-approval-notice"
+);
+
+approvalNotice.textContent = "※ 기사 및 승인 상태를 확인하고 있습니다.";
+approvalNotice.style.color = "#93C5FD";
+
+button.disabled = true;
+
 
     try {
         // FastAPI에서 저장된 AI 기사 가져오기
@@ -693,8 +708,47 @@ async function loadAIArticle() {
             "ai-article-body"
         ).textContent = body;
 
-        // 검토 상태
-        status.textContent = article.status || "검토 필요";
+        
+// 기사 승인 상태
+const isApproved = article.status === "승인";
+
+status.textContent = isApproved ? "승인" : "검토 필요";
+status.style.color = isApproved ? "#4ADE80" : "#FBBF24";
+
+// 승인자
+document.getElementById(
+    "ai-article-approved-by"
+).textContent = isApproved
+    ? (article.approved_by || "-")
+    : "-";
+
+// 승인시각
+document.getElementById(
+    "ai-article-approved-at"
+).textContent = isApproved
+    ? (article.approved_at || "-")
+    : "-";
+
+// 승인 사유
+document.getElementById(
+    "ai-article-approval-reason"
+).textContent = isApproved
+    ? (article.approval_reason || "-")
+    : "-";
+
+// 승인 상태에 따른 안내 문구
+if (isApproved) {
+    approvalNotice.textContent =
+        "✓ 본 기사는 AI가 생성하고 편집자가 최종 승인한 기사입니다.";
+
+    approvalNotice.style.color = "#4ADE80";
+} else {
+    approvalNotice.textContent =
+        "※ 본 기사는 AI가 생성한 초안이며 편집자의 최종 승인을 받지 않았습니다.";
+
+    approvalNotice.style.color = "#FBBF24";
+}
+
 
         // 개표 기준시각
         document.getElementById(
@@ -718,8 +772,30 @@ async function loadAIArticle() {
     } catch (error) {
         console.error("AI 기사 조회 실패:", error);
 
-        status.textContent = "조회 실패";
-        errorMessage.textContent = error.message;
+        
+status.textContent = "조회 실패";
+status.style.color = "#F87171";
+
+errorMessage.textContent = error.message;
+
+// 이전 기사 정보 제거
+document.getElementById("ai-article-title").textContent =
+    "AI 기사 조회 실패";
+
+document.getElementById("ai-article-body").textContent = "";
+document.getElementById("ai-article-timestamp").textContent = "-";
+document.getElementById("ai-article-evidence").textContent = "-";
+document.getElementById("ai-article-model").textContent = "-";
+
+document.getElementById("ai-article-approved-by").textContent = "-";
+document.getElementById("ai-article-approved-at").textContent = "-";
+document.getElementById("ai-article-approval-reason").textContent = "-";
+
+approvalNotice.textContent =
+    "※ 기사를 조회하지 못해 승인 상태를 확인할 수 없습니다.";
+
+approvalNotice.style.color = "#F87171";
+
 
     } finally {
         button.disabled = false;

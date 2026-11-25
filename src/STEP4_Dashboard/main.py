@@ -223,17 +223,107 @@ async def websocket_endpoint(websocket: WebSocket):
 # STEP 6 - RAG 기반 AI 기사 조회 API
 # ============================================
 
+
 import json
+import hashlib
 from fastapi import HTTPException
 
 
-# AI 기사가 저장된 폴더
+# AI 기사 및 승인 기사 저장 경로
 ARTICLE_DIR = BASE_DIR / "rag" / "articles"
+APPROVED_DIR = BASE_DIR / "rag" / "approved"
+APPROVAL_LOG_PATH = BASE_DIR / "rag" / "approval_log.jsonl"
+
+
+def get_valid_approved_article(article_file, article, article_hash):
+    """현재 기사에 대한 유효한 승인 기록을 확인한다."""
+
+    approved_file = (
+        APPROVED_DIR / f"approved_{article_file.stem}.json"
+    )
+
+    if not approved_file.is_file():
+        return None
+
+    if not APPROVAL_LOG_PATH.is_file():
+        return None
+
+    try:
+        with open(approved_file, "r", encoding="utf-8-sig") as file:
+            approved = json.load(file)
+
+        if not isinstance(approved, dict):
+            return None
+
+        # 1. 승인 상태 확인
+        if approved.get("status") != "승인":
+            return None
+
+        # 2. 현재 기사와 승인 당시 기사 해시 비교
+        if approved.get("source_article_hash") != article_hash:
+            return None
+
+        # 3. 승인 기사와 현재 초안의 데이터 비교
+        for key, value in article.items():
+            if key != "status" and approved.get(key) != value:
+                return None
+
+        # 4. 해당 기사의 최신 처리 이력 확인
+        latest_record = None
+
+        with open(APPROVAL_LOG_PATH, "r", encoding="utf-8-sig") as file:
+            for line in file:
+                if not line.strip():
+                    continue
+
+                record = json.loads(line)
+
+                if record.get("article_file") == article_file.name:
+                    latest_record = record
+
+        if latest_record is None:
+            return None
+
+        if latest_record.get("status") != "승인":
+            return None
+
+        if latest_record.get("article_hash") != article_hash:
+            return None
+
+        # 5. 자동 검증 결과 확인
+        for key in (
+            "basic_validation",
+            "source_validation",
+            "rag_validation",
+        ):
+            if latest_record.get(key) is not True:
+                return None
+
+        if latest_record.get("validation_errors") != []:
+            return None
+
+        # 6. 편집자 승인 정보 일치 확인
+        approval_fields = {
+            "approved_by": "editor",
+            "approved_at": "timestamp",
+            "approval_reason": "reason",
+        }
+
+        for approved_key, log_key in approval_fields.items():
+            value = approved.get(approved_key)
+
+            if not value or value != latest_record.get(log_key):
+                return None
+
+        return approved
+
+    except (OSError, ValueError, TypeError, AttributeError):
+        return None
 
 
 @app.get("/api/ai-article")
 def get_ai_article(step: int = 10):
-    """저장된 AI 기사 초안을 조회한다."""
+    """현재 개표 단계의 기사와 승인 상태를 조회한다."""
 
     # 개표 단계는 1~10 사이만 허용
     if not 1 <= step <= 10:
@@ -246,17 +336,22 @@ def get_ai_article(step: int = 10):
         ARTICLE_DIR / f"ai_article_step_{step:02d}.json"
     )
 
-    if not article_file.exists():
+    if not article_file.is_file():
         raise HTTPException(
             status_code=404,
             detail=f"{step}단계 AI 기사가 아직 생성되지 않았습니다."
         )
 
     try:
-        with open(article_file, "r", encoding="utf-8") as file:
-            article = json.load(file)
+        # 동일한 파일 내용으로 JSON 해석과 해시 계산
+        article_bytes = article_file.read_bytes()
+        article = json.loads(article_bytes.decode("utf-8-sig"))
 
-    except (OSError, json.JSONDecodeError):
+        article_hash = hashlib.sha256(
+            article_bytes
+        ).hexdigest()
+
+    except (OSError, ValueError):
         raise HTTPException(
             status_code=500,
             detail="AI 기사 파일을 읽을 수 없습니다."
@@ -268,7 +363,34 @@ def get_ai_article(step: int = 10):
             detail="AI 기사 데이터 형식이 올바르지 않습니다."
         )
 
-    # 기사 기본 정보 반환
+    if article.get("step") != step:
+        raise HTTPException(
+            status_code=500,
+            detail="요청 단계와 기사 단계가 일치하지 않습니다."
+        )
+
+    # 유효한 승인 기사 확인
+    approved = get_valid_approved_article(
+        article_file,
+        article,
+        article_hash
+    )
+
+    if approved is not None:
+        article = approved
+    else:
+        article["status"] = "검토 필요"
+
+        # 유효하지 않은 승인 정보 제거
+        for key in (
+            "approved_by",
+            "approved_at",
+            "approval_reason",
+            "source_article_hash",
+        ):
+            article.pop(key, None)
+
+    # 기존 API 반환 구조 유지
     return {
         "project": "AIJ_P1",
         "mode": "가상 선거·교육용 시뮬레이션",
