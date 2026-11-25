@@ -256,3 +256,20 @@ __marimo__/
 # 임시 파일
 *.tmp
 *.bak
+
+# ==========================================
+# AIJ-P1 인증정보 및 로컬 설정 보호
+# ==========================================
+
+# Google Cloud TTS 인증키
+google_tts_key.json
+
+# 추가 인증키 및 비밀 설정
+*.secret.json
+*.credentials.json
+.env.*
+!.env.example
+
+# CapCut 로컬 편집 프로젝트
+*.ccproj
+*.capcut
