@@ -7,7 +7,7 @@
 
 **2026 한빛시 시장 선거 AI 가상 개표 특집**
 
-[▶ 최종 뉴스 영상 시청하기 (Google Drive)](https://drive.google.com/file/d/1QvFlP_iatlrwPH9_il7MD83jNmfhx-fg/view?usp=sharing)
+[▶ 최종 뉴스 영상 시청하기 (Google Drive)](https://drive.google.com/file/d/1_a4BQ9g78F7yzgqDbPreUeiyYi9aAZip/view?usp=sharing)
 
 | 항목 | 내용 |
 |---|---|
