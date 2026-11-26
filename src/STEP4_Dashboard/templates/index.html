@@ -39,12 +39,62 @@
     </p>
 </section>
 
-        <section>
-            <h2>개표 현황</h2>
-            <p>총 선거인 수: 500,000명</p>
-            <p>총 투표자 수: 350,000명</p>
-            <p>투표율: 70.0%</p>
-        </section>
+        
+<!-- 투표 현황: 투표 종료 후 고정 데이터 -->
+<section>
+    <h2>투표 현황</h2>
+    <p>총 선거인 수: 500,000명</p>
+    <p>총 투표자 수: 350,000명</p>
+    <p>투표율: 70.0%</p>
+</section>
+
+<!-- 개표 현황: 단계별 동적 데이터 -->
+<section id="counting-status">
+    <h2>개표 현황</h2>
+
+    <p>
+        현재 개표 단계:
+        <strong id="counting-step">-</strong> / 10
+    </p>
+
+    <p>
+        개표 기준시각:
+        <span id="counting-timestamp">-</span>
+    </p>
+
+    <div class="counting-progress-header">
+        <span>개표율</span>
+        <strong id="counting-progress-pct">-</strong>
+    </div>
+
+    <div class="counting-progress-track">
+        <div id="counting-progress-bar"
+             class="counting-progress-bar"
+             style="width: 0%;">
+        </div>
+    </div>
+
+    <p>
+        누적 개표수:
+        <strong id="counting-counted-ballots">-</strong>
+    </p>
+
+    <p>
+        미개표 투표수:
+        <strong id="counting-remaining-ballots">-</strong>
+    </p>
+
+    <p>
+        유효투표수:
+        <strong id="counting-valid-votes">-</strong>
+    </p>
+
+    <p>
+        무효투표수:
+        <strong id="counting-invalid-votes">-</strong>
+    </p>
+</section>
+
 
         <section>
             <h2>후보별 득표 현황</h2>

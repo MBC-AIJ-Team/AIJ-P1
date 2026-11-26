@@ -138,3 +138,38 @@ footer {
 .election-table th:first-child {
     color: #93c5fd;
 }
+
+
+/* ==========================================
+   단계별 개표 현황 진행 막대
+   ========================================== */
+
+.counting-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+#counting-progress-pct {
+    color: #93c5fd;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.counting-progress-track {
+    width: 100%;
+    height: 18px;
+    background: #334155;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.counting-progress-bar {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}

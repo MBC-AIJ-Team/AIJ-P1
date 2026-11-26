@@ -12,15 +12,20 @@ async function loadElectionResults() {
 
         const result = await response.json();
 
-        // 마지막 개표 단계 확인
-        const finalStep = Number(
+        
+// 현재 선택된 개표 단계 확인
+const finalStep = Number(
     document.getElementById("step-select").value
 );
 
-        // 마지막 단계의 후보별 데이터 합산
-        const finalRows = result.data.filter(
-            row => Number(row.step) === finalStep
-        );
+// 개표 현황 갱신
+updateCountingStatus(result.data, finalStep);
+
+// 선택된 단계의 후보별 데이터 합산
+const finalRows = result.data.filter(
+    row => Number(row.step) === finalStep
+);
+
 
         const candidates = {};
 
@@ -468,10 +473,15 @@ if (stepSelect) {
                 `${result.step} / 10`
             );
 
-            // 개표 초기화 시 화면 데이터 초기화
-            if (result.status === "reset") {
+            
+// 개표 초기화 시 화면 데이터 초기화
+if (result.status === "reset") {
 
-                // 단계 선택값 초기화
+    // 개표 현황 초기화
+    resetCountingStatus();
+
+    // 단계 선택값 초기화
+
                 const stepSelect = document.getElementById(
                     "step-select"
                 );
@@ -815,3 +825,130 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+
+// ============================================
+// 개표 단계별 개표 현황 갱신
+// ============================================
+
+function updateCountingStatus(rows, step) {
+
+    step = Number(step);
+
+    // 현재 개표 단계의 데이터 추출
+    const stepRows = rows.filter(
+        row => Number(row.step) === step
+    );
+
+    // 지역별 중복 데이터 제거
+    const regionMap = new Map();
+
+    for (const row of stepRows) {
+        if (!regionMap.has(row.region_id)) {
+            regionMap.set(row.region_id, row);
+        }
+    }
+
+    const regions = [...regionMap.values()];
+
+    // 개표 데이터가 없는 경우
+    if (step !== 0 && regions.length !== 5) {
+        console.error("개표 현황 데이터 부족:", step);
+        return;
+    }
+
+    // 지역별 개표 데이터 합산
+    const counted = regions.reduce(
+        (sum, row) => sum + Number(row.counted_ballots), 0
+    );
+
+    const valid = regions.reduce(
+        (sum, row) => sum + Number(row.valid_votes), 0
+    );
+
+    const invalid = regions.reduce(
+        (sum, row) => sum + Number(row.invalid_votes), 0
+    );
+
+    // 전체 투표수: 지역별 중복 제거 후 계산
+    const totalRegionMap = new Map();
+
+    for (const row of rows) {
+        if (!totalRegionMap.has(row.region_id)) {
+            totalRegionMap.set(row.region_id, row);
+        }
+    }
+
+    const total = [...totalRegionMap.values()].reduce(
+        (sum, row) => sum + Number(row.total_ballots), 0
+    );
+
+    if (!Number.isFinite(total) || total <= 0) {
+        console.error("전체 투표수 데이터 오류");
+        return;
+    }
+
+    const remaining = total - counted;
+    const progress = counted / total * 100;
+
+    const timestamp = stepRows.length > 0
+        ? stepRows[0].timestamp
+        : "-";
+
+    // 화면에 개표 현황 표시
+    document.getElementById("counting-step")
+        .textContent = step;
+
+    document.getElementById("counting-timestamp")
+        .textContent = timestamp;
+
+    document.getElementById("counting-counted-ballots")
+        .textContent = counted.toLocaleString("ko-KR") + "표";
+
+    document.getElementById("counting-remaining-ballots")
+        .textContent = remaining.toLocaleString("ko-KR") + "표";
+
+    document.getElementById("counting-valid-votes")
+        .textContent = valid.toLocaleString("ko-KR") + "표";
+
+    document.getElementById("counting-invalid-votes")
+        .textContent = invalid.toLocaleString("ko-KR") + "표";
+
+    document.getElementById("counting-progress-pct")
+        .textContent = progress.toFixed(2) + "%";
+
+    document.getElementById("counting-progress-bar")
+        .style.width = progress + "%";
+}
+
+
+// ============================================
+// 개표 현황 초기화
+// ============================================
+
+function resetCountingStatus() {
+
+    document.getElementById("counting-step")
+        .textContent = "0";
+
+    document.getElementById("counting-timestamp")
+        .textContent = "-";
+
+    document.getElementById("counting-progress-pct")
+        .textContent = "0.00%";
+
+    document.getElementById("counting-progress-bar")
+        .style.width = "0%";
+
+    document.getElementById("counting-counted-ballots")
+        .textContent = "0표";
+
+    document.getElementById("counting-remaining-ballots")
+        .textContent = "350,000표";
+
+    document.getElementById("counting-valid-votes")
+        .textContent = "0표";
+
+    document.getElementById("counting-invalid-votes")
+        .textContent = "0표";
+}
