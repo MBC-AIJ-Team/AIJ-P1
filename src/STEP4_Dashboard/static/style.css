@@ -1,5 +1,8 @@
 
-/* AIJ_P1 가상 선거 대시보드 */
+/* ==========================================
+   AIJ_P1 가상 선거 대시보드
+   Wide Dashboard Layout v2.0
+   ========================================== */
 
 * {
     box-sizing: border-box;
@@ -10,121 +13,377 @@ body {
     font-family: "Malgun Gothic", Arial, sans-serif;
     background-color: #0b1424;
     color: #ffffff;
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-/* 상단 뉴스 헤더 */
+/* ==========================================
+   1. 상단 뉴스 헤더
+   ========================================== */
+
 header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
     background-color: #172b49;
-    padding: 30px;
-    text-align: center;
+    padding: 12px 20px;
     border-bottom: 3px solid #3b82f6;
 }
 
 header h1 {
-    margin: 0 0 12px;
-    font-size: 32px;
+    margin: 0;
+    font-size: 26px;
 }
 
 header p {
+    margin: 4px 0 0;
     color: #cbd5e1;
+    font-size: 12px;
 }
 
 header strong {
     display: inline-block;
-    margin-top: 10px;
-    padding: 8px 16px;
+    padding: 8px 14px;
     background-color: #f59e0b;
     color: #111827;
     border-radius: 6px;
+    font-size: 13px;
 }
 
-/* 대시보드 본문 */
-main {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
+/* ==========================================
+   2. 대시보드 전체 영역
+   ========================================== */
+
+main.dashboard {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
 }
 
-/* 개표 정보 카드 */
+/* 공통 카드 디자인 */
+
 section {
+    min-width: 0;
     background-color: #17263b;
-    margin-bottom: 24px;
-    padding: 25px;
-    border-radius: 12px;
+    margin: 0;
+    padding: 14px;
+    border-radius: 8px;
     border: 1px solid #334155;
 }
 
 section h2 {
-    margin-top: 0;
-    padding-bottom: 12px;
+    margin: 0 0 10px;
+    padding-bottom: 8px;
     border-bottom: 1px solid #334155;
     color: #93c5fd;
+    font-size: 17px;
 }
 
-/* 후보 및 지역 표시 영역 */
-
-/* 후보별 및 지역별 결과 */
-#candidate-results,
-#region-results {
-    padding: 20px;
-    min-height: 100px;
-    background-color: #0f1d30;
-    border-radius: 8px;
-    color: #cbd5e1;
+section p {
+    margin: 6px 0;
+    line-height: 1.5;
 }
 
-/* Plotly 그래프 전용 영역 */
-#vote-chart {
+/* ==========================================
+   3. 개표 단계 및 WebSocket 제어
+   ========================================== */
+
+.control-row {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 12px;
+}
+
+#step-control {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#step-control h2 {
     width: 100%;
-    min-height: 450px;
-    padding: 0;
-    background-color: #0f1d30;
-    border-radius: 8px;
-    overflow: hidden;
+    margin-bottom: 0;
 }
 
-
-/* 하단 출처 표시 */
-footer {
-    padding: 25px;
-    text-align: center;
-    background-color: #101b2e;
+#selected-step-info {
+    font-size: 12px;
     color: #94a3b8;
+}
+
+#step-select {
+    background-color: #0f1d30;
+    color: #ffffff;
+    border: 1px solid #475569;
+    border-radius: 5px;
+    padding: 7px 10px;
+    font-size: 14px;
+}
+
+#websocket-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+}
+
+#websocket-controls h2 {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.ws-status-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
     font-size: 13px;
 }
 
-/* 모바일 화면 대응 */
-@media (max-width: 768px) {
-    header h1 {
-        font-size: 24px;
-    }
-
-    main {
-        margin: 15px auto;
-        padding: 0 12px;
-    }
-
-    section {
-        padding: 18px;
-    }
+.ws-status-row strong {
+    color: #93c5fd;
 }
 
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
 
-/* 지역별 개표 현황 표 */
+/* 공통 버튼 디자인 */
+
+button {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #1d4ed8;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+#ws-pause-btn {
+    background-color: #475569;
+}
+
+#ws-reset-btn {
+    background-color: #475569;
+}
+
+#ws-error-message,
+#ai-article-error {
+    color: #f87171;
+    font-size: 12px;
+    width: 100%;
+}
+
+#ws-error-message:empty,
+#ai-article-error:empty {
+    display: none;
+}
+
+/* ==========================================
+   4. 투표 현황 및 개표 현황
+   ========================================== */
+
+.summary-row {
+    display: grid;
+    grid-template-columns: 1fr 2.4fr;
+    gap: 12px;
+}
+
+.metric-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.voting-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.counting-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background-color: #0f1d30;
+    border-radius: 6px;
+    padding: 10px 8px;
+    min-width: 0;
+}
+
+.metric span {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.metric strong {
+    color: #f8fafc;
+    font-size: clamp(16px, 1.2vw, 24px);
+    font-weight: bold;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #334155;
+}
+
+.section-heading h2 {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.counting-time {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* 개표 진행 막대 */
+
+#counting-progress-pct {
+    color: #60a5fa;
+    font-weight: bold;
+}
+
+.counting-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.counting-progress-track {
+    width: 100%;
+    height: 8px;
+    background-color: #334155;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 10px 0 0;
+}
+
+.counting-progress-bar {
+    height: 100%;
+    background-color: #3b82f6;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+/* ==========================================
+   5. 메인 분석 영역 - 가로 3열
+   ========================================== */
+
+.content-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+    align-items: stretch;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+}
+
+/* 왼쪽 후보별 및 지역별 개표 */
+
+.results-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    min-height: 0;
+}
+
+#candidate-section,
+#region-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+#region-section {
+    flex: 1;
+}
+
+/* 후보 및 지역 결과 영역 */
+
+#candidate-results,
+#region-results {
+    padding: 8px;
+    min-height: 0;
+    min-width: 0;
+    background-color: #0f1d30;
+    border-radius: 6px;
+    color: #cbd5e1;
+    overflow: auto;
+}
+
+#region-results {
+    flex: 1;
+}
+
+#candidate-results h2,
+#candidate-results h3,
+#region-results h3 {
+    margin: 6px 0;
+}
+
+#candidate-results p,
+#region-results p {
+    margin: 4px 0;
+}
+
+/* ==========================================
+   6. 지역별 개표 현황 표
+   ========================================== */
 
 .election-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 4px;
     color: #ffffff;
     text-align: center;
+    font-size: 12px;
 }
 
 .election-table th,
 .election-table td {
-    padding: 14px;
+    padding: 8px 5px;
     border-bottom: 1px solid #334155;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .election-table thead {
@@ -139,37 +398,695 @@ footer {
     color: #93c5fd;
 }
 
-
 /* ==========================================
-   단계별 개표 현황 진행 막대
+   7. 중앙 Plotly 그래프
    ========================================== */
 
-.counting-progress-header {
+#chart-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+#vote-chart {
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    flex: 1;
+    padding: 0;
+    background-color: #0f1d30;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* ==========================================
+   8. 오른쪽 AI 뉴스 기사
+   ========================================== */
+
+#ai-news-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    gap: 8px;
+}
+
+.article-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
-    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
 }
 
-#counting-progress-pct {
+#ai-article-status {
     color: #93c5fd;
-    font-size: 24px;
-    font-weight: bold;
 }
 
-.counting-progress-track {
+.article-content {
+    flex: 1;
+    min-height: 100px;
+    padding: 12px;
+    background-color: #0f1d30;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+}
+
+#ai-article-title {
+    color: #f8fafc;
+    font-size: 17px;
+    line-height: 1.5;
+    margin: 0 0 12px;
+}
+
+#ai-article-body {
+    white-space: pre-wrap;
+    line-height: 1.65;
+    font-size: 13px;
+    color: #cbd5e1;
+}
+
+.article-meta {
+    background-color: #0f1d30;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+    overflow: auto;
+    max-height: 170px;
+    overflow-wrap: anywhere;
+}
+
+.article-meta p {
+    margin: 4px 0;
+}
+
+.article-meta span {
+    color: #e2e8f0;
+}
+
+#ai-article-approval-notice {
+    color: #fbbf24;
+}
+
+/* ==========================================
+   9. 하단 출처 및 안내
+   ========================================== */
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 20px;
+    background-color: #101b2e;
+    border-top: 1px solid #334155;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+/* ==========================================
+   10. 내부 스크롤바 디자인
+   ========================================== */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #475569 #0f1d30;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f1d30;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 4px;
+}
+
+/* ==========================================
+   11. FHD 데스크톱 한 화면 최적화
+   ========================================== */
+
+@media (min-width: 1400px) and (min-height: 800px) {
+
+    body {
+        height: 100vh;
+    }
+
+    main.dashboard {
+        min-height: 0;
+    }
+
+    .content-grid {
+        grid-template-rows: minmax(0, 1fr);
+    }
+
+    #candidate-section {
+        max-height: 50%;
+    }
+
+    #ai-news-section {
+        overflow-y: auto;
+    }
+}
+
+/* ==========================================
+   12. 노트북 및 작은 데스크톱 화면
+   ========================================== */
+
+@media (max-width: 1399px),
+       (max-height: 799px) {
+
+    .content-grid {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1fr);
+    }
+
+    #ai-news-section {
+        grid-column: 1 / -1;
+    }
+
+    .article-content {
+        max-height: 300px;
+    }
+
+    #vote-chart {
+        min-height: 340px;
+    }
+
+    #chart-section {
+        min-height: 400px;
+    }
+
+    .summary-row {
+        grid-template-columns: 1fr 2fr;
+    }
+}
+
+/* ==========================================
+   13. 태블릿 화면
+   ========================================== */
+
+@media (max-width: 1000px) {
+
+    .control-row,
+    .summary-row {
+        grid-template-columns: 1fr;
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .metric strong {
+        font-size: 19px;
+    }
+}
+
+/* ==========================================
+   14. 모바일 화면
+   ========================================== */
+
+@media (max-width: 768px) {
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+    }
+
+    header h1 {
+        font-size: 22px;
+    }
+
+    main.dashboard {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .control-row,
+    .summary-row,
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    section {
+        padding: 12px;
+    }
+
+    .counting-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .voting-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .metric strong {
+        font-size: 17px;
+    }
+
+    #chart-section {
+        min-height: 320px;
+    }
+
+    #vote-chart {
+        min-height: 280px;
+    }
+
+    footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+
+/* ==========================================
+   15. 데스크톱 3열 레이아웃 최적화
+   ========================================== */
+
+@media (min-width: 1024px) {
+
+    body {
+        height: 100dvh;
+        min-height: 0;
+    }
+
+    header,
+    footer {
+        flex-shrink: 0;
+    }
+
+    header {
+        padding: 10px 16px;
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+
+    main.dashboard {
+        flex: 1;
+        min-height: 0;
+        padding: 8px 12px;
+        gap: 8px;
+    }
+
+    section {
+        padding: 12px;
+    }
+
+    section h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+    }
+
+    .control-row {
+        grid-template-columns: 1fr 3fr;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .summary-row {
+        grid-template-columns: 1fr 2fr;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .metric {
+        padding: 8px 6px;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.15fr)
+            minmax(0, 1fr)
+            minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr);
+        gap: 8px;
+        flex: 1;
+        min-height: 320px;
+    }
+
+    .results-column {
+        gap: 8px;
+    }
+
+    #candidate-section {
+        flex: 1;
+        max-height: none;
+    }
+
+    #region-section {
+        flex: 1;
+    }
+
+    #candidate-results,
+    #region-results {
+        flex: 1;
+        padding: 6px;
+        min-height: 0;
+        overflow: auto;
+    }
+
+    .election-table {
+        font-size: 12px;
+    }
+
+    .election-table th,
+    .election-table td {
+        padding: 6px 4px;
+    }
+
+    #chart-section {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #vote-chart {
+        width: 100%;
+        height: 0;
+        min-height: 0;
+        flex: 1;
+    }
+
+    #ai-news-section {
+        grid-column: auto;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .article-content {
+        flex: 1;
+        min-height: 100px;
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    .article-meta {
+        flex-shrink: 0;
+        max-height: 150px;
+    }
+
+    footer {
+        padding: 6px 12px;
+    }
+}
+
+
+/* ==========================================
+   16. 후보별 득표 현황 최적화
+   ========================================== */
+
+.candidate-item {
+    padding: 7px 4px;
+}
+
+.candidate-item + .candidate-item {
+    border-top: 1px solid #24354c;
+}
+
+.candidate-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.candidate-votes {
+    margin-left: auto;
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+.candidate-line > strong:last-child {
+    min-width: 65px;
+    text-align: right;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+}
+
+.candidate-track {
     width: 100%;
-    height: 18px;
-    background: #334155;
-    border-radius: 6px;
+    height: 10px;
+    background-color: #334155;
+    border-radius: 5px;
     overflow: hidden;
-    margin-bottom: 24px;
 }
 
-.counting-progress-bar {
+.candidate-fill {
     height: 100%;
-    background: #3b82f6;
-    border-radius: 6px;
-    transition: width 0.5s ease;
+    border-radius: 5px;
+    transition: width 0.4s ease;
+}
+
+
+/* ==========================================
+   17. 데스크톱 화면 최종 공간 최적화
+   ========================================== */
+
+@media (min-width: 1024px) {
+
+    /* 상단 제어 영역 높이 축소 */
+
+    #step-control,
+    #websocket-controls {
+        padding: 8px 12px;
+        gap: 6px 12px;
+    }
+
+    #step-control h2,
+    #websocket-controls h2 {
+        margin-bottom: 2px;
+        padding-bottom: 5px;
+    }
+
+    /* 투표 및 개표 현황 높이 축소 */
+
+    .summary-row section {
+        padding: 8px 12px;
+    }
+
+    .metric {
+        padding: 6px 8px;
+        gap: 3px;
+    }
+
+    .counting-progress-track {
+        margin-top: 6px;
+        height: 6px;
+    }
+
+    /* 후보별, 지역별 높이 배분 */
+
+    #candidate-section {
+        flex: 0 0 auto;
+        max-height: none;
+    }
+
+    #candidate-results {
+        flex: 0 0 auto;
+        padding: 4px 6px;
+    }
+
+    #region-section {
+        flex: 1;
+        min-height: 0;
+    }
+
+    #region-results {
+        padding: 4px 6px;
+    }
+
+    /* 5개 지역 표 전체 표시 */
+
+    .election-table {
+        margin-top: 0;
+        font-size: 13px;
+    }
+
+    .election-table th,
+    .election-table td {
+        padding: 6px 4px;
+        line-height: 1.3;
+    }
+
+    /* AI 기사 정보 2열 배치 */
+
+    .article-meta {
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 6px 10px;
+        max-height: 180px;
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .article-meta p {
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .article-meta p > span {
+        display: block;
+        margin-top: 3px;
+    }
+
+    #ai-article-error,
+    #ai-article-approval-notice {
+        grid-column: 1 / -1;
+    }
+
+    .article-content {
+        padding: 10px;
+        min-height: 80px;
+    }
+
+    #ai-article-title {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    #ai-article-body {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+}
+
+
+/* ==========================================
+   18. 최종 화면 높이 및 영역 비율 조정
+   ========================================== */
+
+@media (min-width: 1024px) {
+
+    /* 상단 헤더 높이 축소 */
+
+    header {
+        padding: 8px 16px;
+    }
+
+    /* 공통 카드 여백 축소 */
+
+    section {
+        padding: 10px 12px;
+    }
+
+    section h2 {
+        margin-bottom: 6px;
+        padding-bottom: 5px;
+    }
+
+    /* 상단 제어 영역 */
+
+    #step-control,
+    #websocket-controls {
+        padding: 6px 12px;
+    }
+
+    /* 투표 및 개표 현황 */
+
+    .metric {
+        padding: 5px 8px;
+        gap: 2px;
+    }
+
+    /* 후보별 득표 영역 높이 축소 */
+
+    .candidate-item {
+        padding: 4px;
+    }
+
+    .candidate-line {
+        margin-bottom: 3px;
+    }
+
+    .candidate-track {
+        height: 8px;
+    }
+
+    /* 지역별 개표 표 높이 최적화 */
+
+    #region-results {
+        padding: 4px;
+    }
+
+    .election-table th,
+    .election-table td {
+        padding: 4px 5px;
+        line-height: 1.2;
+    }
+
+    /* AI 기사 본문 앞쪽 공백 제거 */
+
+    #ai-article-body {
+        white-space: pre-line;
+    }
+
+}
+
+
+/* ==========================================
+   19. STEP 10 - 실시간 상태 표시 고도화
+   ========================================== */
+
+/* 정상 연결 및 개표 완료 */
+.ws-status-row strong.status-success {
+    color: #4ade80;
+}
+
+/* 개표 진행 중 */
+.ws-status-row strong.status-active {
+    color: #60a5fa;
+}
+
+/* 일시정지 및 재연결 시도 */
+.ws-status-row strong.status-warning {
+    color: #fbbf24;
+}
+
+/* 연결 종료 및 오류 */
+.ws-status-row strong.status-error {
+    color: #f87171;
+}
+
+/* 개표 대기 상태 */
+.ws-status-row strong.status-idle {
+    color: #94a3b8;
+}
+
+
+/* ==========================================
+   20. STEP 10 - AI 기사 단계 표시 디자인
+   ========================================== */
+
+.article-step-label {
+    display: inline-block;
+    background-color: #243b5a;
+    color: #93c5fd;
+    border: 1px solid #3b82f6;
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,249 +9,273 @@
 </head>
 <body>
 
+    <!-- 상단 헤더 -->
     <header>
-        <h1>2026 한빛시 시장 선거</h1>
-        <p>AIJ NEWSROOM | 가상 선거 개표 대시보드</p>
+        <div class="header-title">
+            <h1>2026 한빛시 시장 선거</h1>
+            <p>AIJ NEWSROOM | 가상 선거 개표 대시보드</p>
+        </div>
+
         <strong>교육용 가상 선거 · 실제 선거 결과 아님</strong>
     </header>
 
-    <main>
+    <main class="dashboard">
 
-<section id="step-control">
-    <h2>개표 단계 선택</h2>
+        <!-- 상단 개표 제어 영역 -->
+        <div class="control-row">
 
-    <label for="step-select">조회할 개표 단계:</label>
+            <section id="step-control">
+                <h2>개표 단계 선택</h2>
 
-    <select id="step-select">
-        <option value="1">1단계</option>
-        <option value="2">2단계</option>
-        <option value="3">3단계</option>
-        <option value="4">4단계</option>
-        <option value="5">5단계</option>
-        <option value="6">6단계</option>
-        <option value="7">7단계</option>
-        <option value="8">8단계</option>
-        <option value="9">9단계</option>
-        <option value="10" selected>10단계 (최종)</option>
-    </select>
+                <label for="step-select">조회 단계:</label>
 
-    <p id="selected-step-info">
-        현재 조회 단계: 10단계
-    </p>
-</section>
+                
+<select id="step-select">
+    <option value="0" selected>개표 대기</option>
+    <option value="1">1단계</option>
+    <option value="2">2단계</option>
+    <option value="3">3단계</option>
+    <option value="4">4단계</option>
+    <option value="5">5단계</option>
+    <option value="6">6단계</option>
+    <option value="7">7단계</option>
+    <option value="8">8단계</option>
+    <option value="9">9단계</option>
+    <option value="10">10단계 (최종)</option>
+</select>
 
-        
-<!-- 투표 현황: 투표 종료 후 고정 데이터 -->
-<section>
-    <h2>투표 현황</h2>
-    <p>총 선거인 수: 500,000명</p>
-    <p>총 투표자 수: 350,000명</p>
-    <p>투표율: 70.0%</p>
-</section>
 
-<!-- 개표 현황: 단계별 동적 데이터 -->
-<section id="counting-status">
-    <h2>개표 현황</h2>
+                <p id="selected-step-info">
+    개표 대기 중
+</p>
+            </section>
 
-    <p>
-        현재 개표 단계:
-        <strong id="counting-step">-</strong> / 10
-    </p>
+            <!-- WebSocket 제어 -->
+            <section id="websocket-controls">
+                <h2>실시간 가상 선거 개표</h2>
 
-    <p>
-        개표 기준시각:
-        <span id="counting-timestamp">-</span>
-    </p>
+                <div class="ws-status-row">
+                    <span>
+                        연결:
+                        <strong id="ws-connection-status">연결 전</strong>
+                    </span>
+                    <span>
+                        개표:
+                        <strong id="ws-current-step">0 / 10</strong>
+                    </span>
+                    <span>
+                        상태:
+                        <strong id="ws-playback-status">대기 중</strong>
+                    </span>
+                </div>
 
-    <div class="counting-progress-header">
-        <span>개표율</span>
-        <strong id="counting-progress-pct">-</strong>
-    </div>
+                <div class="button-group">
+                    <button id="ws-start-btn" type="button">
+                        ▶ 재생
+                    </button>
+                    <button id="ws-pause-btn" type="button">
+                        ⏸ 일시정지
+                    </button>
+                    <button id="ws-resume-btn" type="button">
+                        ▶ 이어서 재생
+                    </button>
+                    <button id="ws-reset-btn" type="button">
+                        ↻ 초기화
+                    </button>
+                </div>
 
-    <div class="counting-progress-track">
-        <div id="counting-progress-bar"
-             class="counting-progress-bar"
-             style="width: 0%;">
+                <p id="ws-error-message" role="alert"></p>
+            </section>
+
         </div>
-    </div>
 
-    <p>
-        누적 개표수:
-        <strong id="counting-counted-ballots">-</strong>
-    </p>
+        <!-- 투표 및 개표 현황 -->
+        <div class="summary-row">
 
-    <p>
-        미개표 투표수:
-        <strong id="counting-remaining-ballots">-</strong>
-    </p>
+            <section id="voting-status">
+                <h2>투표 현황</h2>
 
-    <p>
-        유효투표수:
-        <strong id="counting-valid-votes">-</strong>
-    </p>
+                <div class="metric-grid voting-grid">
+                    <div class="metric">
+                        <span>총 선거인 수</span>
+                        <strong>500,000명</strong>
+                    </div>
+                    <div class="metric">
+                        <span>총 투표자 수</span>
+                        <strong>350,000명</strong>
+                    </div>
+                    <div class="metric">
+                        <span>투표율</span>
+                        <strong>70.0%</strong>
+                    </div>
+                </div>
+            </section>
 
-    <p>
-        무효투표수:
-        <strong id="counting-invalid-votes">-</strong>
-    </p>
-</section>
+            <section id="counting-status">
+                <div class="section-heading">
+                    <h2>개표 현황</h2>
+                    <span class="counting-time">
+                        기준시각:
+                        <span id="counting-timestamp">-</span>
+                        |
+                        <strong id="counting-step">-</strong> / 10단계
+                    </span>
+                </div>
 
+                <div class="metric-grid counting-grid">
 
-        <section>
-            <h2>후보별 득표 현황</h2>
-            <div id="candidate-results">
-                후보별 개표 데이터를 불러올 예정입니다.
+                    <div class="metric">
+                        <span>개표율</span>
+                        <strong id="counting-progress-pct">-</strong>
+                    </div>
+
+                    <div class="metric">
+                        <span>누적 개표수</span>
+                        <strong id="counting-counted-ballots">-</strong>
+                    </div>
+
+                    <div class="metric">
+                        <span>미개표 투표수</span>
+                        <strong id="counting-remaining-ballots">-</strong>
+                    </div>
+
+                    <div class="metric">
+                        <span>유효투표수</span>
+                        <strong id="counting-valid-votes">-</strong>
+                    </div>
+
+                    <div class="metric">
+                        <span>무효투표수</span>
+                        <strong id="counting-invalid-votes">-</strong>
+                    </div>
+
+                </div>
+
+                <div class="counting-progress-track">
+                    <div id="counting-progress-bar"
+                         class="counting-progress-bar"
+                         style="width: 0%;">
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- 메인 분석 영역 -->
+        <div class="content-grid">
+
+            <!-- 왼쪽: 후보별 / 지역별 개표 -->
+            <div class="results-column">
+
+                <section id="candidate-section">
+                    <h2>후보별 득표 현황</h2>
+                    <div id="candidate-results">
+                        후보별 개표 데이터를 불러올 예정입니다.
+                    </div>
+                </section>
+
+                <section id="region-section">
+                    <h2>지역별 개표 현황</h2>
+                    <div id="region-results">
+                        지역별 개표 데이터를 불러올 예정입니다.
+                    </div>
+                </section>
+
             </div>
-        </section>
 
-        <section>
-            <h2>지역별 개표 현황</h2>
-            <div id="region-results">
-                지역별 개표 데이터를 불러올 예정입니다.
-            </div>
-        </section>
+            <!-- 중앙: 개표 변화 그래프 -->
+            <section id="chart-section">
+                <h2>개표 단계별 변화</h2>
+                <div id="vote-chart"></div>
+            </section>
 
-        <section>
-            <h2>개표 단계별 변화</h2>
-            <div id="vote-chart"></div>
-        </section>
+            <!-- 오른쪽: AI 뉴스 기사 -->
+            <section id="ai-news-section">
+
+                <div class="section-heading">
+    <h2>AI 선거 뉴스 기사</h2>
+
+    <span id="ai-article-step" class="article-step-label">
+        조회 대기
+    </span>
+</div>
+
+                <div class="article-toolbar">
+                    <span>
+                        기사 상태:
+                        <strong id="ai-article-status">조회 전</strong>
+                    </span>
+
+                    <button id="ai-article-load-btn" type="button">
+                        AI 기사 불러오기
+                    </button>
+                </div>
+
+                <div class="article-content">
+
+                    <h3 id="ai-article-title">
+                        AI 뉴스 기사 제목이 표시됩니다.
+                    </h3>
+
+                    <div id="ai-article-body">
+                        AI 기사 불러오기 버튼을 눌러주세요.
+                    </div>
+
+                </div>
+
+                <div class="article-meta">
+
+                    <p>
+                        개표 기준시각:
+                        <span id="ai-article-timestamp">-</span>
+                    </p>
+
+                    <p>
+                        RAG 근거 ID:
+                        <span id="ai-article-evidence">-</span>
+                    </p>
+
+                    <p>
+                        AI 모델:
+                        <span id="ai-article-model">-</span>
+                    </p>
+
+                    <p>
+                        승인자:
+                        <span id="ai-article-approved-by">-</span>
+                    </p>
+
+                    <p>
+                        승인시각:
+                        <span id="ai-article-approved-at">-</span>
+                    </p>
+
+                    <p>
+                        승인 사유:
+                        <span id="ai-article-approval-reason">-</span>
+                    </p>
+
+                    <p id="ai-article-error" role="alert"></p>
+
+                    <p id="ai-article-approval-notice">
+                        ※ 기사 조회 후 편집자 승인 상태가 표시됩니다.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </div>
+
     </main>
 
     <footer>
-        <p>데이터 출처: AIJ_P1 교육용 가상 선거 데이터</p>
-        <p>본 화면은 AI 데이터 저널리즘 교육용 시뮬레이션입니다.</p>
+        <span>데이터 출처: AIJ_P1 교육용 가상 선거 데이터</span>
+        <span>AI 데이터 저널리즘 교육용 시뮬레이션</span>
     </footer>
 
     <script src="https://cdn.plot.ly/plotly-3.1.0.min.js"></script>
-<script src="/static/dashboard.js"></script>
-
-<!-- STEP 5: WebSocket 개표 제어 영역 -->
-<section id="websocket-controls"
-         style="margin: 24px; padding: 20px;
-                border: 1px solid #ddd;
-                border-radius: 10px;">
-
-    <h2>실시간 가상 선거 개표</h2>
-
-    <p>가상 선거 · 교육용 시뮬레이션</p>
-
-    <p>
-        연결 상태:
-        <strong id="ws-connection-status">연결 전</strong>
-    </p>
-
-    <p>
-        개표 단계:
-        <strong id="ws-current-step">0 / 10</strong>
-    </p>
-
-    <p>
-        재생 상태:
-        <strong id="ws-playback-status">대기 중</strong>
-    </p>
-
-    <button id="ws-start-btn" type="button">
-        ▶ 재생
-    </button>
-
-    <button id="ws-pause-btn" type="button">
-        ⏸ 일시정지
-    </button>
-
-    <button id="ws-resume-btn" type="button">
-        ▶ 이어서 재생
-    </button>
-
-    <button id="ws-reset-btn" type="button">
-        ↻ 초기화
-    </button>
-
-    <p id="ws-error-message"
-       role="alert"
-       style="color: red;"></p>
-
-</section>
-
-<!-- ============================================
-     STEP 6 - RAG 기반 AI 뉴스 기사 표시 영역
-============================================ -->
-
-<section id="ai-news-section"
-         style="margin: 24px; padding: 20px;
-                border: 1px solid #ddd;
-                border-radius: 10px;">
-
-    <h2>AI 선거 뉴스 기사</h2>
-
-    <p>
-        <strong>가상 선거·교육용 시뮬레이션</strong>
-    </p>
-
-    <p>
-        기사 상태:
-        <strong id="ai-article-status">조회 전</strong>
-    </p>
-
-    <button id="ai-article-load-btn" type="button">
-        AI 기사 불러오기
-    </button>
-
-    <hr>
-
-    <h3 id="ai-article-title">
-        AI 뉴스 기사 제목이 표시됩니다.
-    </h3>
-
-    <div id="ai-article-body"
-         style="white-space: pre-wrap;
-                line-height: 1.8;">
-        AI 기사 불러오기 버튼을 눌러주세요.
-    </div>
-
-    <hr>
-
-    <p>
-        개표 기준시각:
-        <span id="ai-article-timestamp">-</span>
-    </p>
-
-    <p>
-        RAG 근거 ID:
-        <span id="ai-article-evidence">-</span>
-    </p>
-
-    <p>
-        AI 모델:
-        <span id="ai-article-model">-</span>
-    </p>
-
-    
-    <p>
-        승인자:
-        <span id="ai-article-approved-by">-</span>
-    </p>
-
-    <p>
-        승인시각:
-        <span id="ai-article-approved-at">-</span>
-    </p>
-
-    <p>
-        승인 사유:
-        <span id="ai-article-approval-reason">-</span>
-    </p>
-
-    <p id="ai-article-error"
-       role="alert"
-       style="color: red;"></p>
-
-    <p id="ai-article-approval-notice"
-       style="color: #FBBF24;">
-        ※ 기사 조회 후 편집자 승인 상태가 표시됩니다.
-    </p>
-
-
-</section>
+    <script src="/static/dashboard.js"></script>
 
 </body>
 </html>

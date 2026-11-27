@@ -1,5 +1,23 @@
+// AI 기사 조회 요청 ID
+let articleRequestId = 0;
+
+// 개표 데이터 조회 요청 ID
+let electionRequestId = 0;
+let regionRequestId = 0;
+let chartRequestId = 0;
 
 async function loadElectionResults() {
+
+    const requestId = ++electionRequestId;
+
+    const finalStep = Number(
+        document.getElementById("step-select").value
+    );
+
+    if (finalStep === 0) {
+        return;
+    }
+
     const container = document.getElementById("candidate-results");
 
     try {
@@ -12,11 +30,15 @@ async function loadElectionResults() {
 
         const result = await response.json();
 
-        
-// 현재 선택된 개표 단계 확인
-const finalStep = Number(
-    document.getElementById("step-select").value
-);
+// 이전 요청 또는 변경된 개표 단계의 응답 무시
+if (
+    requestId !== electionRequestId ||
+    finalStep !== Number(
+        document.getElementById("step-select").value
+    )
+) {
+    return;
+}
 
 // 개표 현황 갱신
 updateCountingStatus(result.data, finalStep);
@@ -61,16 +83,14 @@ const finalRows = result.data.filter(
             const color = colors[name] || "#94a3b8";
 
             return `
-                <div style="margin-bottom: 25px;">
-                    <h3>${index + 1}위 · ${name}</h3>
-                    <p>${votes.toLocaleString("ko-KR")}표 · ${percentage}%</p>
-                    <div style="background:#334155; border-radius:6px;">
-                        <div style="
-                            width:${percentage}%;
-                            height:18px;
-                            background:${color};
-                            border-radius:6px;
-                        "></div>
+                <div class="candidate-item">
+                    <div class="candidate-line">
+                        <strong>${index + 1}위 · ${name}</strong>
+                        <span class="candidate-votes">${votes.toLocaleString("ko-KR")}표</span>
+                        <strong style="color:${color};">${percentage}%</strong>
+                    </div>
+                    <div class="candidate-track">
+                        <div class="candidate-fill" style="width:${percentage}%; background:${color};"></div>
                     </div>
                 </div>
             `;
@@ -79,15 +99,35 @@ const finalRows = result.data.filter(
         console.log("후보별 개표 데이터 로드 완료");
 
     } catch (error) {
-        console.error(error);
-        container.textContent = "개표 데이터를 불러오지 못했습니다.";
+
+    if (
+        requestId !== electionRequestId ||
+        finalStep !== Number(
+            document.getElementById("step-select").value
+        )
+    ) {
+        return;
     }
+
+    console.error(error);
+    container.textContent = "개표 데이터를 불러오지 못했습니다.";
+}
 }
 
-document.addEventListener("DOMContentLoaded", loadElectionResults);
 
 
 async function loadRegionResults() {
+
+    const requestId = ++regionRequestId;
+
+    const finalStep = Number(
+        document.getElementById("step-select").value
+    );
+
+    if (finalStep === 0) {
+        return;
+    }
+
     const container = document.getElementById("region-results");
 
     try {
@@ -99,10 +139,15 @@ async function loadRegionResults() {
 
         const result = await response.json();
 
-        // 마지막 개표 단계 확인
-        const finalStep = Number(
-    document.getElementById("step-select").value
-);
+// 이전 요청 또는 변경된 개표 단계의 응답 무시
+if (
+    requestId !== regionRequestId ||
+    finalStep !== Number(
+        document.getElementById("step-select").value
+    )
+) {
+    return;
+}
 
         const finalRows = result.data.filter(
             row => Number(row.step) === finalStep
@@ -157,21 +202,40 @@ async function loadRegionResults() {
                     </tbody>
                 </table>
             </div>
-            <p>최종 개표 단계: ${finalStep}단계</p>
         `;
 
         console.log("지역별 개표 현황 로드 완료");
 
     } catch (error) {
-        console.error(error);
-        container.textContent = "지역별 데이터를 불러오지 못했습니다.";
+
+    if (
+        requestId !== regionRequestId ||
+        finalStep !== Number(
+            document.getElementById("step-select").value
+        )
+    ) {
+        return;
     }
+
+    console.error(error);
+    container.textContent = "지역별 데이터를 불러오지 못했습니다.";
+}
 }
 
-document.addEventListener("DOMContentLoaded", loadRegionResults);
 
 
 async function loadVoteChart() {
+
+    const requestId = ++chartRequestId;
+
+    const currentStep = Number(
+        document.getElementById("step-select").value
+    );
+
+    if (currentStep === 0) {
+        return;
+    }
+
     const container = document.getElementById("vote-chart");
 
     try {
@@ -183,6 +247,16 @@ async function loadVoteChart() {
 
         const result = await response.json();
 
+// 이전 요청 또는 변경된 개표 단계의 응답 무시
+if (
+    requestId !== chartRequestId ||
+    currentStep !== Number(
+        document.getElementById("step-select").value
+    )
+) {
+    return;
+}
+
         const candidateNames = ["이몽룡", "심청", "홍길동"];
 
         const colors = {
@@ -191,15 +265,8 @@ async function loadVoteChart() {
             "홍길동": "#22c55e"
         };
 
-        // 개표 단계를 숫자 순서로 정렬
+               
         
-        // 현재 선택된 개표 단계 확인
-        const stepSelect = document.getElementById("step-select");
-
-        const currentStep = stepSelect
-            ? Number(stepSelect.value)
-            : 1;
-
         // 현재 단계까지의 개표 데이터만 표시
         const steps = [...new Set(
             result.data
@@ -249,21 +316,17 @@ async function loadVoteChart() {
         });
 
         const layout = {
-            title: {
-                text: "개표 단계별 후보 득표율 변화",
-                font: { color: "#ffffff", size: 18 }
-            },
             paper_bgcolor: "#0f1d30",
             plot_bgcolor: "#0f1d30",
             font: { color: "#cbd5e1" },
             xaxis: {
-                title: "개표 단계",
+                title: { text: "개표 단계", standoff: 5 },
                 tickmode: "array",
                 tickvals: steps,
                 gridcolor: "#334155"
             },
             yaxis: {
-                title: "득표율 (%)",
+                title: { text: "득표율", standoff: 5 },
                 ticksuffix: "%",
                 gridcolor: "#334155",
                 rangemode: "tozero"
@@ -271,10 +334,11 @@ async function loadVoteChart() {
             legend: {
                 orientation: "h",
                 x: 0,
-                y: -0.3
+                y: 1.02,
+                yanchor: "bottom"
             },
             margin: {
-                l: 55, r: 20, t: 65, b: 80
+                l: 52, r: 12, t: 32, b: 42
             },
             autosize: true
         };
@@ -292,30 +356,54 @@ async function loadVoteChart() {
         console.log("득표율 변화 그래프 표시 완료");
 
     } catch (error) {
-        console.error(error);
-        container.textContent = "그래프를 표시하지 못했습니다.";
+
+    if (
+        requestId !== chartRequestId ||
+        currentStep !== Number(
+            document.getElementById("step-select").value
+        )
+    ) {
+        return;
     }
+
+    console.error(error);
+    container.textContent = "그래프를 표시하지 못했습니다.";
+}
 }
 
-document.addEventListener("DOMContentLoaded", loadVoteChart);
 
 
 document.addEventListener("DOMContentLoaded", () => {
     const stepSelect = document.getElementById("step-select");
     const stepInfo = document.getElementById("selected-step-info");
 
-    stepSelect.addEventListener("change", () => {
-        const selectedStep = stepSelect.value;
+    
+stepSelect.addEventListener("change", () => {
+    const selectedStep = stepSelect.value;
 
-        // 현재 선택한 개표 단계 표시
-        stepInfo.textContent =
-            `현재 조회 단계: ${selectedStep}단계`;
+    // STEP 10 - 개표 대기 선택 시 화면 초기화
+    if (Number(selectedStep) === 0) {
+        resetDashboard();
+        return;
+    }
+
+    // 현재 선택한 개표 단계 표시
+    stepInfo.textContent =
+        `현재 조회 단계: ${selectedStep}단계`;
+
 
         // 선택한 단계의 후보별 개표 데이터 다시 계산
         loadElectionResults();
 
         // 선택한 단계의 지역별 개표 데이터 다시 계산
         loadRegionResults();
+
+        loadVoteChart().then(highlightSelectedStep);
+
+// AI 뉴스 기사 자동 갱신
+loadAIArticle();
+
+console.log(`개표 ${selectedStep}단계 조회 완료`);
 
         console.log(`개표 ${selectedStep}단계 조회 완료`);
     });
@@ -352,13 +440,6 @@ function highlightSelectedStep() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const stepSelect = document.getElementById("step-select");
-
-    stepSelect.addEventListener("change", highlightSelectedStep);
-
-    // 최초 그래프 생성 시의 선택 단계는 별도 연동 예정
-});
 
 
 /* ==========================================
@@ -368,13 +449,57 @@ document.addEventListener("DOMContentLoaded", () => {
 let electionWS = null;
 
 // 상태 표시 함수
+
 function updateWSStatus(id, message) {
+
     const element = document.getElementById(id);
 
-    if (element) {
-        element.textContent = message;
+    if (!element) {
+        return;
     }
+
+    element.textContent = message;
+
+    // 연결 상태와 개표 진행 상태에만 색상 적용
+    if (
+        id !== "ws-connection-status" &&
+        id !== "ws-playback-status"
+    ) {
+        return;
+    }
+
+    // 이전 상태 색상 제거
+    element.classList.remove(
+        "status-success",
+        "status-active",
+        "status-warning",
+        "status-error",
+        "status-idle"
+    );
+
+    // 상태별 CSS 클래스 설정
+    const statusClasses = {
+        "연결됨": "status-success",
+        "개표 완료": "status-success",
+        "개표 진행 중": "status-active",
+        "일시정지": "status-warning",
+        "연결 시도 중": "status-warning",
+        "연결 종료 · 재연결 시도 중": "status-warning",
+        "연결 종료": "status-error",
+        "연결 오류": "status-error",
+        "대기 중": "status-idle"
+    };
+
+    const statusClass = statusClasses[message];
+
+    if (statusClass) {
+    element.classList.add(statusClass);
 }
+
+// 개표 제어 버튼 상태 갱신
+updateControlButtons();
+}
+
 
 // WebSocket 연결
 function connectElectionWS() {
@@ -387,7 +512,24 @@ function connectElectionWS() {
 
     // 연결 성공
     
+
 electionWS.onopen = () => {
+
+    // 최초 연결 및 재연결 시 화면 초기화
+    resetDashboard();
+
+    // 실시간 개표 단계 초기화
+    updateWSStatus(
+        "ws-current-step",
+        "0 / 10"
+    );
+
+    // 개표 진행 상태 초기화
+    updateWSStatus(
+        "ws-playback-status",
+        "대기 중"
+    );
+
     // 서버 연결 성공 표시
     updateWSStatus(
         "ws-connection-status",
@@ -400,8 +542,13 @@ electionWS.onopen = () => {
         ""
     );
 
+    // 개표 제어 버튼 상태 갱신
+    updateControlButtons();
+
     console.log("WebSocket 연결 성공");
+    console.log("WebSocket 연결 후 화면 상태 동기화 완료");
 };
+
 
 
     // 서버 데이터 수신
@@ -441,11 +588,14 @@ if (stepSelect) {
     }
 
     // 기존 대시보드 데이터 갱신
-    loadElectionResults();
-    loadRegionResults();
+loadElectionResults();
+loadRegionResults();
 
-    // Plotly 득표율 그래프 갱신
-    loadVoteChart();
+// Plotly 득표율 그래프 갱신
+loadVoteChart();
+
+// STEP 10 - 실시간 AI 뉴스 기사 자동 갱신
+loadAIArticle();
 }
 
 
@@ -456,7 +606,9 @@ if (stepSelect) {
 }
 
 
+        
         else if (result.type === "playback_status") {
+
             const statusText = {
                 paused: "일시정지",
                 playing: "개표 진행 중",
@@ -473,68 +625,17 @@ if (stepSelect) {
                 `${result.step} / 10`
             );
 
-            
-// 개표 초기화 시 화면 데이터 초기화
-if (result.status === "reset") {
+            // 개표 초기화 시 공통 초기화 함수 실행
+            if (result.status === "reset") {
 
-    // 개표 현황 초기화
-    resetCountingStatus();
-
-    // 단계 선택값 초기화
-
-                const stepSelect = document.getElementById(
-                    "step-select"
-                );
-
-                if (stepSelect) {
-                    stepSelect.value = "1";
-                }
-
-                // 현재 조회 단계 안내 변경
-                updateWSStatus(
-                    "selected-step-info",
-                    "개표 대기 중"
-                );
-
-                // 후보별 개표 결과 초기화
-                const candidateContainer = document.getElementById(
-                    "candidate-results"
-                );
-
-                if (candidateContainer) {
-                    candidateContainer.innerHTML =
-                        "<p>개표 시작 전입니다.</p>";
-                }
-
-                // 지역별 결과 초기화
-                const regionContainer = document.getElementById(
-                    "region-results"
-                );
-
-                if (regionContainer) {
-                    regionContainer.innerHTML =
-                        "<p>개표 시작 전입니다.</p>";
-                }
-
-                // Plotly 그래프 초기화
-                const chartContainer = document.getElementById(
-                    "vote-chart"
-                );
-
-                if (chartContainer && typeof Plotly !== "undefined") {
-                    Plotly.purge(chartContainer);
-                    chartContainer.innerHTML =
-                        "<p style='color:#cbd5e1; padding:20px;'>" +
-                        "개표가 시작되면 그래프가 표시됩니다." +
-                        "</p>";
-                }
+                resetDashboard();
 
                 console.log("개표 화면 초기화 완료");
             }
-
         }
 
         else if (result.type === "election_complete") {
+
             updateWSStatus(
                 "ws-playback-status",
                 "개표 완료"
@@ -542,12 +643,14 @@ if (result.status === "reset") {
         }
 
         else if (result.type === "error") {
+
             updateWSStatus(
                 "ws-error-message",
                 result.message
             );
         }
     };
+
 
     // 연결 오류
     electionWS.onerror = () => {
@@ -595,8 +698,10 @@ function sendElectionCommand(command) {
     electionWS.send(command);
 }
 
+
 // 버튼 이벤트 연결
 function initializeElectionControls() {
+
     const buttons = {
         "ws-start-btn": "start",
         "ws-pause-btn": "pause",
@@ -605,6 +710,7 @@ function initializeElectionControls() {
     };
 
     for (const [buttonId, command] of Object.entries(buttons)) {
+
         const button = document.getElementById(buttonId);
 
         if (button) {
@@ -616,6 +722,9 @@ function initializeElectionControls() {
 
     // 버튼 준비 후 WebSocket 연결
     connectElectionWS();
+
+    // 최초 버튼 활성화 상태 설정
+    updateControlButtons();
 }
 
 // HTML 화면이 준비되면 초기화
@@ -629,12 +738,17 @@ if (document.readyState === "loading") {
 }
 
 
+
 /* ==========================================
    STEP 6 - RAG 기반 AI 뉴스 기사 표시
    ========================================== */
 
+
+
 // AI 기사 불러오기
 async function loadAIArticle() {
+
+    const requestId = ++articleRequestId;
 
     const button = document.getElementById(
         "ai-article-load-btn"
@@ -649,14 +763,24 @@ async function loadAIArticle() {
     );
 
     // 현재 선택된 개표 단계
-    const stepSelect = document.getElementById("step-select");
-    const step = stepSelect ? Number(stepSelect.value) : 10;
+const stepSelect = document.getElementById("step-select");
+const step = stepSelect ? Number(stepSelect.value) : 0;
+
+// 개표 대기 상태에서는 AI 기사 조회 차단
+if (!Number.isInteger(step) || step < 1 || step > 10) {
+    resetAIArticle();
+    return;
+}
 
 
 // 이전 오류 메시지 초기화
 errorMessage.textContent = "";
 status.textContent = "불러오는 중";
 status.style.color = "#93C5FD";
+
+// AI 기사 조회 단계 표시
+document.getElementById("ai-article-step").textContent =
+    `${step}단계 조회 중`;
 
 // 이전 승인 정보 초기화
 document.getElementById("ai-article-approved-by").textContent = "-";
@@ -692,7 +816,13 @@ button.disabled = true;
         }
 
         const result = await response.json();
-        const article = result.article;
+
+// 최신 요청이 아니면 화면에 표시하지 않음
+if (requestId !== articleRequestId) {
+    return;
+}
+
+const article = result.article;
 
         if (!article || typeof article.article !== "string") {
             throw new Error("기사 데이터 형식이 올바르지 않습니다.");
@@ -777,14 +907,28 @@ if (isApproved) {
             "ai-article-model"
         ).textContent = article.model || "-";
 
-        console.log(`AI 기사 ${step}단계 조회 완료`);
+        // 현재 조회 완료된 AI 기사 단계 표시
+document.getElementById("ai-article-step").textContent =
+    `${step} / 10단계 기사`;
+
+console.log(`AI 기사 ${step}단계 조회 완료`);
 
     } catch (error) {
-        console.error("AI 기사 조회 실패:", error);
+
+    // 이전 요청의 오류는 무시
+    if (requestId !== articleRequestId) {
+        return;
+    }
+
+    console.error("AI 기사 조회 실패:", error);
 
         
 status.textContent = "조회 실패";
 status.style.color = "#F87171";
+
+// 기사 조회 실패 단계 표시
+document.getElementById("ai-article-step").textContent =
+    `${step}단계 조회 실패`;
 
 errorMessage.textContent = error.message;
 
@@ -808,8 +952,12 @@ approvalNotice.style.color = "#F87171";
 
 
     } finally {
+
+    // 최신 요청만 버튼 상태 변경
+    if (requestId === articleRequestId) {
         button.disabled = false;
     }
+}
 }
 
 
@@ -952,3 +1100,173 @@ function resetCountingStatus() {
     document.getElementById("counting-invalid-votes")
         .textContent = "0표";
 }
+
+
+ // ============================================
+ // STEP 10 - AI 뉴스 기사 초기화
+ // ============================================
+
+ function resetAIArticle() {
+
+    // 진행 중인 이전 기사 요청 무효화
+    articleRequestId++;
+
+    const button = document.getElementById(
+        "ai-article-load-btn"
+    );
+
+    if (button) {
+    const step = Number(
+        document.getElementById("step-select").value
+    );
+
+    button.disabled = step === 0;
+}
+
+    const resetFields = {
+    "ai-article-step": "조회 대기",
+    "ai-article-title": "AI 선거 뉴스 기사",
+         "ai-article-body": "개표가 시작되면 기사를 조회할 수 있습니다.",
+         "ai-article-status": "대기 중",
+         "ai-article-timestamp": "-",
+         "ai-article-evidence": "-",
+         "ai-article-model": "-",
+         "ai-article-approved-by": "-",
+         "ai-article-approved-at": "-",
+         "ai-article-approval-reason": "-",
+         "ai-article-error": "",
+         "ai-article-approval-notice":
+             "※ 개표 시작 전입니다."
+     };
+
+     for (const [id, value] of Object.entries(resetFields)) {
+
+         const element = document.getElementById(id);
+
+         if (element) {
+             element.textContent = value;
+         }
+     }
+
+     const status = document.getElementById(
+         "ai-article-status"
+     );
+
+     if (status) {
+         status.style.color = "#94a3b8";
+     }
+
+     const notice = document.getElementById(
+         "ai-article-approval-notice"
+     );
+
+     if (notice) {
+         notice.style.color = "#94a3b8";
+     }
+
+     console.log("AI 뉴스 기사 초기화 완료");
+ }
+
+
+// ============================================
+// STEP 10 - 개표 제어 버튼 활성화 관리
+// ============================================
+
+function updateControlButtons() {
+
+    const isConnected =
+        electionWS &&
+        electionWS.readyState === WebSocket.OPEN;
+
+    const status = document.getElementById(
+        "ws-playback-status"
+    )?.textContent.trim();
+
+    const buttonStates = {
+        "ws-start-btn":
+            isConnected &&
+            (status === "대기 중" ||
+             status === "개표 완료"),
+
+        "ws-pause-btn":
+            isConnected &&
+            status === "개표 진행 중",
+
+        "ws-resume-btn":
+            isConnected &&
+            status === "일시정지",
+
+        "ws-reset-btn":
+            isConnected
+    };
+
+    for (const [id, enabled] of Object.entries(buttonStates)) {
+
+        const button = document.getElementById(id);
+
+        if (button) {
+            button.disabled = !enabled;
+        }
+    }
+}
+
+
+
+// ============================================
+// STEP 10 - 공통 대시보드 초기화 함수
+// ============================================
+
+function resetDashboard() {
+
+    // 진행 중인 개표 데이터 요청 무효화
+    electionRequestId++;
+    regionRequestId++;
+    chartRequestId++;
+
+    // 조회 단계 초기화
+    document.getElementById("step-select").value = "0";
+
+    document.getElementById("selected-step-info")
+        .textContent = "개표 대기 중";
+
+    // 개표 현황 초기화
+    resetCountingStatus();
+
+    // AI 뉴스 기사 초기화
+    resetAIArticle();
+
+    // 후보별 개표 현황 초기화
+    document.getElementById("candidate-results")
+        .textContent = "개표 시작 전입니다.";
+
+    // 지역별 개표 현황 초기화
+    document.getElementById("region-results")
+        .textContent = "개표 시작 전입니다.";
+
+    // Plotly 그래프 초기화
+    const chart = document.getElementById("vote-chart");
+
+    if (chart) {
+
+        if (typeof Plotly !== "undefined" && chart.data) {
+            Plotly.purge(chart);
+        }
+
+        chart.innerHTML =
+            "<p style='color:#cbd5e1; padding:20px;'>" +
+            "개표가 시작되면 그래프가 표시됩니다." +
+            "</p>";
+    }
+
+    console.log("대시보드 화면 초기화 완료");
+}
+
+
+// 최초 접속 시 초기화
+document.addEventListener("DOMContentLoaded", () => {
+
+    resetDashboard();
+
+    updateWSStatus("ws-current-step", "0 / 10");
+    updateWSStatus("ws-playback-status", "대기 중");
+});
